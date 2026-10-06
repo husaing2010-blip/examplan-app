@@ -1078,7 +1078,7 @@ input[type="checkbox"] {
   </div>
 
   <!-- QR CODE & SHARE MODAL -->
-  <div class="modal-overlay" id="qrModal" style="display: none;">
+  <div class="modal-overlay" id="qrModal" style="display: none;" onclick="if(event.target === this) App.closeQrModal()">
     <div class="modal-dialog">
       <div class="modal-header">
         <h3 class="modal-title" id="qrModalTitle">Student Plan QR Code</h3>
@@ -1112,7 +1112,7 @@ input[type="checkbox"] {
   </div>
 
   <!-- CLOUD SYNC (FIREBASE) SETTINGS MODAL -->
-  <div class="modal-overlay" id="cloudSettingsModal" style="display: none;">
+  <div class="modal-overlay" id="cloudSettingsModal" style="display: none;" onclick="if(event.target === this) App.closeCloudSettingsModal()">
     <div class="modal-dialog">
       <div class="modal-header">
         <h3 class="modal-title">☁️ Cloud Database Settings</h3>
@@ -1141,7 +1141,7 @@ input[type="checkbox"] {
   </div>
 
   <!-- CHANGE PIN MODAL -->
-  <div class="modal-overlay" id="changePinModal" style="display: none;">
+  <div class="modal-overlay" id="changePinModal" style="display: none;" onclick="if(event.target === this) App.closeChangePinModal()">
     <div class="modal-dialog">
       <div class="modal-header">
         <h3 class="modal-title">🔒 Change Tutor PIN</h3>
@@ -1170,7 +1170,7 @@ input[type="checkbox"] {
   </div>
 
   <!-- CONFIRM STOP MODAL -->
-  <div class="modal-overlay" id="confirmStopModal" style="display: none;">
+  <div class="modal-overlay" id="confirmStopModal" style="display: none;" onclick="if(event.target === this) App.closeConfirmStopModal()">
     <div class="modal-dialog">
       <div class="modal-header">
         <h3 class="modal-title" style="color: #F87171;">⏹️ Stop Student Plan?</h3>
@@ -2715,6 +2715,16 @@ const App = {
 
     // Listen to window hash or history popstate
     window.addEventListener('popstate', () => this.detectRoute());
+
+    // Allow closing modals with Escape key
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        this.closeQrModal();
+        this.closeCloudSettingsModal();
+        this.closeChangePinModal();
+        this.closeConfirmStopModal();
+      }
+    });
   },
 
   /**
@@ -3104,8 +3114,8 @@ const App = {
     // Default start date = today
     const today = RevisionPlanner.formatDateISO(new Date());
 
-    // Initialize default subjects state if empty
-    if (Object.keys(this.selectedSubjects).length === 0) {
+    // Initialize default single subject state if empty
+    if (Object.keys(this.selectedSubjects).length === 0 || !Object.values(this.selectedSubjects).some(s => s.selected)) {
       const defaultExamDate = this.getDefaultExamDate();
       this.selectedSubjects = {
         'Mathematics': {
@@ -3113,14 +3123,7 @@ const App = {
           examDate: defaultExamDate,
           topics: getTopicsForSubject('Mathematics', this.selectedYearGroup),
           customTopics: [],
-          expanded: false
-        },
-        'Physics': {
-          selected: true,
-          examDate: defaultExamDate,
-          topics: getTopicsForSubject('Physics', this.selectedYearGroup),
-          customTopics: [],
-          expanded: false
+          expanded: true
         }
       };
     }
@@ -3165,16 +3168,16 @@ const App = {
           </div>
         </div>
 
-        <!-- 4. Subjects & Exam Dates -->
+        <!-- 4. Single Subject & Exam Date -->
         <div class="form-group" style="margin-top: 24px;">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-            <label class="form-label" style="margin-bottom: 0;">4. Subjects & Exam Dates *</label>
+            <label class="form-label" style="margin-bottom: 0;">4. Choose Subject & Exam Date (1 Subject Only) *</label>
             <button class="btn btn-secondary btn-sm" type="button" onclick="App.showAddCustomSubjectPrompt()">
               + Add Custom Subject
             </button>
           </div>
           <p class="form-hint" style="margin-bottom: 12px;">
-            Tick subjects to include, set each subject's exam date, and select topics to revise.
+            Select ONE subject for this revision plan, set its exam date, and choose topics.
           </p>
 
           <div class="subjects-selection-list" id="subjectsListContainer">
@@ -3303,13 +3306,15 @@ const App = {
         <div class="subject-item-card ${isSelected ? 'is-selected' : ''}" id="subCard_${subName.replace(/\s+/g, '_')}">
           
           <div class="subject-header-row">
-            <label class="subject-checkbox-label">
+            <label class="subject-checkbox-label" style="cursor: pointer;">
               <input 
-                type="checkbox" 
+                type="radio" 
+                name="singleSubjectChoice"
                 ${isSelected ? 'checked' : ''} 
-                onchange="App.toggleSubjectSelect('${subName}', this.checked)"
+                onchange="App.selectSingleSubject('${subName}')"
+                style="width: 22px; height: 22px; accent-color: var(--primary-blue); cursor: pointer;"
               >
-              <span>${SYLLABUS_DATA.subjects[subName]?.icon || '📖'} ${subName}</span>
+              <span style="margin-left: 8px;">${SYLLABUS_DATA.subjects[subName]?.icon || '📖'} ${subName}</span>
             </label>
           </div>
 
@@ -3402,17 +3407,23 @@ const App = {
     }).join('');
   },
 
-  toggleSubjectSelect(subName, isChecked) {
+  selectSingleSubject(subName) {
+    const defaultExam = this.getDefaultExamDate();
+    for (const s in this.selectedSubjects) {
+      this.selectedSubjects[s].selected = false;
+      this.selectedSubjects[s].expanded = false;
+    }
     if (!this.selectedSubjects[subName]) {
       this.selectedSubjects[subName] = {
-        selected: isChecked,
-        examDate: this.getDefaultExamDate(),
+        selected: true,
+        examDate: defaultExam,
         topics: getTopicsForSubject(subName, this.selectedYearGroup),
         customTopics: [],
-        expanded: false
+        expanded: true
       };
     } else {
-      this.selectedSubjects[subName].selected = isChecked;
+      this.selectedSubjects[subName].selected = true;
+      this.selectedSubjects[subName].expanded = true;
     }
 
     const container = document.getElementById('subjectsListContainer');
@@ -3491,18 +3502,7 @@ const App = {
     if (!name || !name.trim()) return;
 
     const subName = name.trim();
-    this.selectedSubjects[subName] = {
-      selected: true,
-      examDate: this.getDefaultExamDate(),
-      topics: ['Key Topics & Chapter 1', 'Exam Technique & Case Studies'],
-      customTopics: ['Key Topics & Chapter 1', 'Exam Technique & Case Studies'],
-      expanded: true
-    };
-
-    const container = document.getElementById('subjectsListContainer');
-    if (container) {
-      container.innerHTML = this.renderSubjectsListHtml();
-    }
+    this.selectSingleSubject(subName);
   },
 
   /**
@@ -3523,6 +3523,7 @@ const App = {
     }
 
     // Collect chosen subjects
+    // Collect the chosen single subject
     const subjectsToPlan = [];
     for (const subName in this.selectedSubjects) {
       const sub = this.selectedSubjects[subName];
@@ -3542,11 +3543,12 @@ const App = {
           examDate: sub.examDate,
           topics: chosenTopics
         });
+        break; // Exactly one subject allowed
       }
     }
 
     if (subjectsToPlan.length === 0) {
-      alert('Please select at least one subject.');
+      alert('Please select a subject.');
       return;
     }
 
@@ -3895,22 +3897,42 @@ const App = {
     const studentUrl = this.getStudentShareUrl(plan.id);
     document.getElementById('qrLinkText').textContent = studentUrl;
 
-    // Render QR Code onto Canvas
+    // Render QR Code onto Canvas (standard pure black on white with 4-module quiet zone)
     const canvas = document.getElementById('qrCodeCanvas');
     if (typeof QRCode !== 'undefined' && canvas) {
       QRCode.toCanvas(canvas, studentUrl, {
-        width: 220,
-        margin: 2,
-        darkColor: '#0B1E4A',
-        lightColor: '#FFFFFF'
+        width: 260,
+        margin: 4
       });
     }
 
     document.getElementById('qrModal').style.display = 'flex';
   },
 
+  closeQrModal() {
+    const modal = document.getElementById('qrModal');
+    if (modal) {
+      modal.style.display = 'none';
+    }
+    this.activeModalPlan = null;
+  },
+
   encodeConfig(config) {
-    const json = JSON.stringify(config);
+    const sub = (config.subjects && config.subjects[0]) || {};
+    const compact = {
+      n: config.studentName || '',
+      y: config.yearGroup || 'Year 11',
+      s: config.startDate || '',
+      sub: sub.name || 'Mathematics',
+      ed: sub.examDate || '',
+      wh: config.weekdayHours || 2,
+      we: config.weekendHours || 4,
+      dur: config.sessionDuration || 45,
+      st: config.dailyStartTime || '16:30',
+      rd: config.restDay || 'none',
+      top: (sub.topics && sub.topics.length > 0) ? sub.topics : []
+    };
+    const json = JSON.stringify(compact);
     const bytes = new TextEncoder().encode(json);
     let binary = '';
     for (let i = 0; i < bytes.length; i++) {
@@ -3925,7 +3947,25 @@ const App = {
     for (let i = 0; i < binary.length; i++) {
       bytes[i] = binary.charCodeAt(i);
     }
-    return JSON.parse(new TextDecoder().decode(bytes));
+    const data = JSON.parse(new TextDecoder().decode(bytes));
+    if (data.n && data.sub) {
+      return {
+        studentName: data.n,
+        yearGroup: data.y,
+        startDate: data.s,
+        subjects: [{
+          name: data.sub,
+          examDate: data.ed,
+          topics: (data.top && data.top.length > 0) ? data.top : getTopicsForSubject(data.sub, data.y)
+        }],
+        weekdayHours: data.wh,
+        weekendHours: data.we,
+        sessionDuration: data.dur,
+        dailyStartTime: data.st,
+        restDay: data.rd
+      };
+    }
+    return data;
   },
 
   getStudentShareUrl(planId) {
