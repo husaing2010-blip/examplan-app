@@ -1020,7 +1020,7 @@ input[type="checkbox"] {
   }
 }
 
-</style>
+  </style>
 
   <!-- Firebase v10 Compat SDK for Client-Side Realtime Firestore -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -2051,6 +2051,7 @@ class RevisionPlanner {
       startDate,
       lastExamDate: RevisionPlanner.formatDateISO(lastExamObj),
       status: 'active', // 'active' or 'stopped'
+      planConfig: config, // Raw config for smart self-contained link sharing
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       settings: {
@@ -2578,6 +2579,13 @@ const StorageService = {
     } catch (e) {
       return {};
     }
+  },
+
+  savePlanLocally(plan) {
+    if (!plan || !plan.id) return;
+    const localPlans = this.getLocalPlans();
+    localPlans[plan.id] = plan;
+    localStorage.setItem(this.LOCAL_PLANS_KEY, JSON.stringify(localPlans));
   }
 };
 
@@ -2658,14 +2666,37 @@ const App = {
     document.getElementById('tutorNav').style.display = 'none';
     document.getElementById('headerActions').innerHTML = '';
 
-    const main = document.getElementById('mainContent');
-    main.innerHTML = `
-      <div style="text-align: center; padding: 40px 20px;">
-        <div style="font-size: 2.5rem; margin-bottom: 12px;">⏳</div>
-        <h3 style="color: #FFFFFF; font-size: 1.2rem;">Loading your revision plan...</h3>
-        <p style="color: #93C5FD; font-size: 0.9rem; margin-top: 6px;">Connecting to tutor server...</p>
-      </div>
-    `;
+    const params = new URLSearchParams(window.location.search);
+    const dParam = params.get('d');
+    let initialPlan = null;
+
+    if (dParam) {
+      try {
+        const config = this.decodeConfig(dParam);
+        initialPlan = RevisionPlanner.generatePlan(config);
+        initialPlan.id = planId;
+        const local = StorageService.getLocalPlans()[planId];
+        if (local && local.status) {
+          initialPlan.status = local.status;
+        }
+        StorageService.savePlanLocally(initialPlan);
+        this.currentPlanData = initialPlan;
+        this.updateStudentViewUI(initialPlan);
+      } catch (err) {
+        console.warn('Could not reconstruct plan from URL param:', err);
+      }
+    }
+
+    if (!initialPlan) {
+      const main = document.getElementById('mainContent');
+      main.innerHTML = `
+        <div style="text-align: center; padding: 40px 20px;">
+          <div style="font-size: 2.5rem; margin-bottom: 12px;">⏳</div>
+          <h3 style="color: #FFFFFF; font-size: 1.2rem;">Loading your revision plan...</h3>
+          <p style="color: #93C5FD; font-size: 0.9rem; margin-top: 6px;">Connecting to tutor server...</p>
+        </div>
+      `;
+    }
 
     // Unsubscribe previous subscription if any
     if (this.planSubscriptionUnsub) {
@@ -2680,14 +2711,17 @@ const App = {
         this.updateStudentViewUI(plan);
       },
       (error) => {
-        main.innerHTML = `
-          <div class="card" style="text-align: center; padding: 30px 20px; border-color: #DC2626;">
-            <div style="font-size: 2.5rem; margin-bottom: 10px;">⚠️</div>
-            <h2 style="color: #F87171; font-size: 1.3rem;">Revision Plan Not Found</h2>
-            <p style="color: #CBD5E1; margin: 12px 0;">This revision link may be invalid or has expired.</p>
-            <p style="color: #93C5FD; font-size: 0.9rem;">Please check with your tutor to get a new QR code or link.</p>
-          </div>
-        `;
+        if (!this.currentPlanData) {
+          const main = document.getElementById('mainContent');
+          main.innerHTML = `
+            <div class="card" style="text-align: center; padding: 30px 20px; border-color: #DC2626;">
+              <div style="font-size: 2.5rem; margin-bottom: 10px;">⚠️</div>
+              <h2 style="color: #F87171; font-size: 1.3rem;">Revision Plan Not Found</h2>
+              <p style="color: #CBD5E1; margin: 12px 0;">This revision link may be invalid or has expired.</p>
+              <p style="color: #93C5FD; font-size: 0.9rem;">Please check with your tutor to get a new QR code or link.</p>
+            </div>
+          `;
+        }
       }
     );
   },
@@ -3787,13 +3821,38 @@ const App = {
     document.getElementById('qrModal').style.display = 'flex';
   },
 
-  closeQrModal() {
-    document.getElementById('qrModal').style.display = 'none';
+  encodeConfig(config) {
+    const json = JSON.stringify(config);
+    const bytes = new TextEncoder().encode(json);
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return encodeURIComponent(btoa(binary));
+  },
+
+  decodeConfig(str) {
+    const binary = atob(decodeURIComponent(str));
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return JSON.parse(new TextDecoder().decode(bytes));
   },
 
   getStudentShareUrl(planId) {
     const base = window.location.href.split('?')[0].split('#')[0];
-    return `${base}?plan=${encodeURIComponent(planId)}`;
+    const plan = this.activeModalPlan || StorageService.getLocalPlans()[planId];
+    let extra = '';
+    if (plan && plan.planConfig) {
+      try {
+        const encoded = this.encodeConfig(plan.planConfig);
+        extra = `&d=${encoded}`;
+      } catch (e) {
+        console.warn('Error encoding config in URL:', e);
+      }
+    }
+    return `${base}?plan=${encodeURIComponent(planId)}${extra}`;
   },
 
   copyStudentLink() {
