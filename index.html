@@ -1,0 +1,3980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ExamPlan – Personal Revision Plans</title>
+  
+  <!-- Mobile & PWA Meta Tags -->
+  <meta name="theme-color" content="#0B1E4A">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ExamPlan">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2312306B'/><text x='50' y='65' font-size='50' text-anchor='middle' fill='%23FFFFFF'>📚</text></svg>">
+
+  <!-- Core Stylesheet -->
+  <style>
+/**
+ * ExamPlan Styling
+ * High-Contrast Dark Blue Mobile-First Design
+ * Background: #0B1E4A | Cards: #12306B | Text: #FFFFFF
+ * Fully responsive on mobile phones and desktop computers
+ */
+
+:root {
+  --bg-main: #0B1E4A;
+  --bg-card: #12306B;
+  --bg-card-hover: #173B85;
+  --bg-input: #0E275E;
+  --bg-input-focus: #153885;
+  --border-color: #244C96;
+  --border-focus: #3B82F6;
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+  
+  --primary-blue: #2563EB;
+  --primary-blue-hover: #1D4ED8;
+  --accent-cyan: #06B6D4;
+  --success-green: #16A34A;
+  --success-green-hover: #15803D;
+  --danger-red: #DC2626;
+  --danger-red-hover: #B91C1C;
+  --warning-amber: #D97706;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  
+  --shadow-card: 0 4px 14px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+
+  color-scheme: dark;
+}
+
+/* Base Reset & Typography */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  min-height: 100%;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* App Container */
+.app-container {
+  max-width: 680px;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 60px;
+}
+
+/* Header */
+.app-header {
+  background-color: var(--bg-card);
+  border-bottom: 2px solid var(--border-color);
+  padding: 16px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+
+.logo-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  font-size: 1.8rem;
+}
+
+.logo-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+}
+
+.logo-badge {
+  font-size: 0.7rem;
+  background-color: var(--primary-blue);
+  color: #FFFFFF;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-left: 4px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Global Button Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 10px 16px;
+  min-height: 44px;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  color: #FFFFFF;
+  line-height: 1;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  background-color: var(--primary-blue);
+}
+.btn-primary:hover {
+  background-color: var(--primary-blue-hover);
+}
+
+.btn-success {
+  background-color: var(--success-green);
+}
+.btn-success:hover {
+  background-color: var(--success-green-hover);
+}
+
+.btn-danger {
+  background-color: var(--danger-red);
+}
+.btn-danger:hover {
+  background-color: var(--danger-red-hover);
+}
+
+.btn-secondary {
+  background-color: #1E3A70;
+  border: 1px solid var(--border-color);
+}
+.btn-secondary:hover {
+  background-color: #274D91;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+}
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #FFFFFF;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  min-height: 36px;
+  border-radius: var(--radius-sm);
+}
+
+.btn-icon-only {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+/* Navigation Tabs */
+.tutor-nav {
+  display: flex;
+  background-color: #0E275E;
+  padding: 6px;
+  margin: 16px 20px 0 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  gap: 6px;
+}
+
+.nav-tab {
+  flex: 1;
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.nav-tab.active {
+  background-color: var(--primary-blue);
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Main Content Area */
+.content-area {
+  padding: 20px;
+  flex: 1;
+}
+
+/* Card Container */
+.card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-card);
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-top: -10px;
+  margin-bottom: 16px;
+}
+
+/* Form Groups & Inputs */
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #FFFFFF;
+  margin-bottom: 8px;
+}
+
+.form-hint {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* ALL INPUTS, SELECTS, TEXTAREAS */
+input[type="text"],
+input[type="password"],
+input[type="date"],
+input[type="time"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  background-color: var(--bg-input);
+  color: #FFFFFF !important;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.3;
+  outline: none;
+  transition: border-color 0.2s, background-color 0.2s;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #94A3B8;
+  opacity: 1;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--border-focus);
+  background-color: var(--bg-input-focus);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+/* CRITICAL FIX FOR DATE & TIME PICKERS ON PHONES & DESKTOP */
+input[type="date"],
+input[type="time"] {
+  position: relative;
+  color-scheme: dark !important;
+  background-color: var(--bg-input) !important;
+  color: #FFFFFF !important;
+  font-size: 1rem !important;
+  font-weight: 500;
+  display: block;
+}
+
+/* Force white text on WebKit date fields */
+input[type="date"]::-webkit-datetime-edit,
+input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field {
+  color: #FFFFFF !important;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+  opacity: 0.9;
+  padding: 4px;
+  margin-right: -4px;
+}
+
+/* Explicit formatted date preview box to confirm chosen date */
+.date-confirm-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 4px 10px;
+  background-color: rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #93C5FD;
+  font-weight: 500;
+}
+
+/* Custom Select dropdown indicator */
+.select-wrapper {
+  position: relative;
+}
+.select-wrapper::after {
+  content: '▼';
+  font-size: 0.75rem;
+  color: #CBD5E1;
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+select {
+  padding-right: 40px;
+  cursor: pointer;
+}
+select option {
+  background-color: #0E275E;
+  color: #FFFFFF;
+  padding: 8px;
+}
+
+/* Year Group Chips */
+.year-pills {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.year-pill {
+  padding: 10px 8px;
+  background-color: var(--bg-input);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: #FFFFFF;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.year-pill.active {
+  background-color: var(--primary-blue);
+  border-color: #60A5FA;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
+}
+.year-pill small {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+.year-pill.active small {
+  color: #E0E7FF;
+}
+
+/* Subjects Section */
+.subjects-selection-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.subject-item-card {
+  background-color: #0E275E;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  transition: border-color 0.2s;
+}
+.subject-item-card.is-selected {
+  border-color: var(--border-focus);
+}
+
+.subject-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.subject-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  cursor: pointer;
+  flex: 1;
+}
+
+.checkbox-custom {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid #60A5FA;
+  background-color: #0B1E4A;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--primary-blue);
+  cursor: pointer;
+}
+
+/* Exam Date Row within Subject */
+.subject-exam-date-box {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Topics Accordion / Drawer */
+.topics-drawer-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #93C5FD;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: none;
+  border: none;
+  margin-top: 10px;
+  padding: 4px 0;
+}
+.topics-drawer-toggle:hover {
+  text-decoration: underline;
+}
+
+.topics-drawer-content {
+  margin-top: 10px;
+  background-color: #081738;
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.topics-actions-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.topics-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.topic-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: #FFFFFF;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.custom-topic-input-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* Time & Schedule Controls */
+.time-presets-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.time-btn-pill {
+  padding: 10px;
+  background-color: var(--bg-input);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+.time-btn-pill.active {
+  background-color: var(--primary-blue);
+  border-color: #60A5FA;
+}
+
+/* SAVED PLANS COMPACT LIST (Section 6) */
+.search-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.saved-plans-compact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.compact-plan-row {
+  background-color: var(--bg-card);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: background-color 0.2s;
+}
+
+.compact-plan-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.compact-plan-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.compact-plan-meta {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Status Badges */
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-active {
+  background-color: rgba(22, 163, 74, 0.25);
+  color: #4ADE80;
+  border: 1px solid #16A34A;
+}
+
+.badge-stopped {
+  background-color: rgba(220, 38, 38, 0.25);
+  color: #F87171;
+  border: 1px solid #DC2626;
+}
+
+.compact-plan-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* STUDENT VIEW STYLES */
+.student-banner {
+  background: linear-gradient(135deg, #1E3A8A, #172554);
+  border: 1.5px solid #3B82F6;
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.student-name-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  margin-bottom: 4px;
+}
+
+.student-subtitle {
+  font-size: 0.95rem;
+  color: #93C5FD;
+}
+
+.student-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.student-stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.student-stat-val {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #FFFFFF;
+}
+
+.student-stat-lbl {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+/* STOPPED SCREEN (Section 5 - Crucial Requirement) */
+.stopped-notice-screen {
+  background-color: #1A0D1B;
+  border: 2px solid #DC2626;
+  border-radius: var(--radius-xl);
+  padding: 36px 24px;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(220, 38, 38, 0.3);
+  margin-top: 30px;
+  animation: pulseStop 2s infinite ease-in-out;
+}
+
+@keyframes pulseStop {
+  0%, 100% { border-color: #DC2626; box-shadow: 0 0 15px rgba(220, 38, 38, 0.4); }
+  50% { border-color: #EF4444; box-shadow: 0 0 25px rgba(239, 68, 68, 0.7); }
+}
+
+.stopped-icon {
+  font-size: 3.5rem;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.stopped-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #F87171;
+  margin-bottom: 14px;
+}
+
+.stopped-message {
+  font-size: 1.15rem;
+  line-height: 1.6;
+  color: #FFFFFF;
+  font-weight: 600;
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+/* Day Schedule in Student Plan */
+.schedule-day-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.schedule-day-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 12px;
+}
+
+.schedule-day-date {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.schedule-day-badge {
+  font-size: 0.75rem;
+  background-color: #1E3A70;
+  padding: 2px 8px;
+  border-radius: 8px;
+  color: #93C5FD;
+}
+
+.session-slot-card {
+  background-color: #0E275E;
+  border-left: 4px solid var(--primary-blue);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+.session-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.session-time-badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #93C5FD;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.session-subject-badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  background-color: rgba(59, 130, 246, 0.3);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.session-topic-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #FFFFFF;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+/* Topic Study Links (Section 3) */
+.session-links-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.study-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: #FFFFFF;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.link-youtube {
+  background-color: #DC2626;
+}
+.link-youtube:hover {
+  background-color: #B91C1C;
+}
+
+.link-notes {
+  background-color: #059669;
+}
+.link-notes:hover {
+  background-color: #047857;
+}
+
+/* Modals & Dialogs */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(5, 13, 33, 0.85);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-dialog {
+  background-color: var(--bg-card);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  max-width: 480px;
+  width: 100%;
+  padding: 24px;
+  box-shadow: var(--shadow-lg);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.modal-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #FFFFFF;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+.close-btn:hover {
+  color: #FFFFFF;
+}
+
+/* QR Code Display Container */
+.qr-container-card {
+  background: #FFFFFF;
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 16px auto;
+  width: fit-content;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.qr-link-copy-box {
+  background-color: #0E275E;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.qr-link-text {
+  flex: 1;
+  font-size: 0.85rem;
+  color: #93C5FD;
+  word-break: break-all;
+  user-select: all;
+}
+
+/* Floating Action / Bottom Status */
+.sync-indicator-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  padding: 8px 16px;
+  background-color: #081738;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 90;
+}
+
+.sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+}
+.sync-dot.online { background-color: #22C55E; box-shadow: 0 0 6px #22C55E; }
+.sync-dot.offline { background-color: #F59E0B; }
+
+/* PRINT STYLES FOR PRINT QR CARD */
+@media print {
+  body {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+  }
+  .app-header, .tutor-nav, .compact-plan-actions, .sync-indicator-bar, .no-print {
+    display: none !important;
+  }
+  .modal-overlay {
+    position: static;
+    background: none;
+    padding: 0;
+  }
+  .modal-dialog {
+    border: none;
+    box-shadow: none;
+    max-width: 100%;
+    color: #000000 !important;
+    background: #FFFFFF !important;
+  }
+  .print-qr-card-layout {
+    border: 3px solid #000000;
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    max-width: 500px;
+    margin: 20px auto;
+  }
+  .print-qr-card-layout h1 {
+    font-size: 26pt;
+    color: #000000 !important;
+    margin-bottom: 8px;
+  }
+  .print-qr-card-layout p {
+    color: #333333 !important;
+    font-size: 14pt;
+  }
+  .qr-container-card {
+    box-shadow: none;
+    border: 1px solid #000000;
+    margin: 20px auto;
+  }
+}
+
+</style>
+
+  <!-- Firebase v10 Compat SDK for Client-Side Realtime Firestore -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- TOP NAVIGATION BAR -->
+    <header class="app-header">
+      <div class="logo-area" id="headerLogoArea">
+        <span class="logo-icon">📚</span>
+        <div>
+          <span class="logo-title">ExamPlan</span>
+          <span class="logo-badge" id="roleBadge">TUTOR</span>
+        </div>
+      </div>
+      <div class="header-actions" id="headerActions">
+        <!-- Injected dynamically based on view -->
+      </div>
+    </header>
+
+    <!-- TUTOR NAVIGATION TABS (Visible in Tutor View) -->
+    <nav class="tutor-nav no-print" id="tutorNav" style="display: none;">
+      <button class="nav-tab active" id="tabCreateBtn" onclick="App.switchTutorTab('create')">
+        ✏️ Create Plan
+      </button>
+      <button class="nav-tab" id="tabSavedBtn" onclick="App.switchTutorTab('saved')">
+        📋 Saved Plans <span id="savedCountBadge" style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 10px; font-size: 0.75rem;">0</span>
+      </button>
+    </nav>
+
+    <!-- MAIN VIEW CONTAINER -->
+    <main class="content-area" id="mainContent">
+      <!-- Dynamic Views rendered here: Student View, Tutor Creator, Tutor Saved Plans, PIN Entry -->
+      <div style="text-align: center; padding: 40px 20px;">
+        <p style="color: #93C5FD;">Loading ExamPlan...</p>
+      </div>
+    </main>
+
+    <!-- BOTTOM STATUS / SYNC BAR -->
+    <footer class="sync-indicator-bar no-print" id="bottomStatusBar">
+      <div id="cloudStatusText">
+        <span class="sync-dot offline" id="syncDot"></span>
+        <span id="syncLabel">Local Mode (Realtime Ready)</span>
+      </div>
+      <div id="footerLinks">
+        <button class="btn btn-ghost btn-sm" id="footerTutorLink" onclick="App.promptTutorLogin()" style="color: #93C5FD; font-size: 0.8rem;">
+          🔒 Tutor Access
+        </button>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- QR CODE & SHARE MODAL -->
+  <div class="modal-overlay" id="qrModal" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="qrModalTitle">Student Plan QR Code</h3>
+        <button class="close-btn" onclick="App.closeQrModal()">&times;</button>
+      </div>
+      
+      <p style="color: #CBD5E1; font-size: 0.9rem; text-align: center; margin-bottom: 8px;">
+        Scan this QR code with any phone camera to open this student's revision plan. No login required!
+      </p>
+
+      <div class="qr-container-card">
+        <canvas id="qrCodeCanvas"></canvas>
+      </div>
+
+      <div class="qr-link-copy-box">
+        <span class="qr-link-text" id="qrLinkText">https://...</span>
+        <button class="btn btn-primary btn-sm" onclick="App.copyStudentLink()">
+          📋 Copy
+        </button>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 16px;">
+        <button class="btn btn-secondary btn-full" onclick="App.printQrCard()">
+          🖨️ Print QR Card
+        </button>
+        <button class="btn btn-primary btn-full" onclick="App.closeQrModal()">
+          ✕ Hide / Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLOUD SYNC (FIREBASE) SETTINGS MODAL -->
+  <div class="modal-overlay" id="cloudSettingsModal" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">☁️ Cloud Database Settings</h3>
+        <button class="close-btn" onclick="App.closeCloudSettingsModal()">&times;</button>
+      </div>
+
+      <p style="color: #CBD5E1; font-size: 0.85rem; margin-bottom: 14px;">
+        Connect free <strong>Firebase Firestore</strong> to enable instant, live updates across all student and tutor phones from anywhere.
+      </p>
+
+      <div class="form-group">
+        <label class="form-label">Firebase Config JSON or API Key</label>
+        <textarea id="firebaseConfigInput" rows="5" placeholder='Paste your Firebase config object here, e.g.:&#10;{&#10;  "apiKey": "AIzaSy...",&#10;  "projectId": "your-project",&#10;  ...&#10;}'></textarea>
+        <div class="form-hint">Tip: Found in your Firebase Console under Project Settings -> General.</div>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 18px;">
+        <button class="btn btn-primary btn-full" onclick="App.saveCloudConfig()">
+          💾 Save & Connect
+        </button>
+        <button class="btn btn-secondary" onclick="App.clearCloudConfig()">
+          Disconnect
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHANGE PIN MODAL -->
+  <div class="modal-overlay" id="changePinModal" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">🔒 Change Tutor PIN</h3>
+        <button class="close-btn" onclick="App.closeChangePinModal()">&times;</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Enter New PIN (at least 4 digits)</label>
+        <input type="password" id="newPinInput" maxlength="10" placeholder="e.g. 2026">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Confirm New PIN</label>
+        <input type="password" id="confirmPinInput" maxlength="10" placeholder="Confirm PIN">
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 18px;">
+        <button class="btn btn-primary btn-full" onclick="App.saveNewPin()">
+          Save New PIN
+        </button>
+        <button class="btn btn-secondary" onclick="App.closeChangePinModal()">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIRM STOP MODAL -->
+  <div class="modal-overlay" id="confirmStopModal" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" style="color: #F87171;">⏹️ Stop Student Plan?</h3>
+        <button class="close-btn" onclick="App.closeConfirmStopModal()">&times;</button>
+      </div>
+
+      <p style="color: #FFFFFF; font-size: 1rem; margin-bottom: 14px;">
+        Are you sure you want to stop <strong id="stopStudentNameText">this student</strong>'s plan?
+      </p>
+      <p style="color: #CBD5E1; font-size: 0.85rem; margin-bottom: 20px;">
+        Their phone screen will immediately change to: 
+        <br>
+        <em>"Your plan has been stopped. Please go to your tutor to reconnect your plan."</em>
+      </p>
+
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-danger btn-full" id="confirmStopActionBtn">
+          Yes, Stop Plan
+        </button>
+        <button class="btn btn-secondary btn-full" onclick="App.closeConfirmStopModal()">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRINT VIEW CONTAINER (Hidden on screen, visible during @media print) -->
+  <div id="printContainer" class="print-qr-card-layout" style="display: none;">
+    <!-- Injected dynamically on print -->
+  </div>
+
+  <!-- All-In-One Bundled Application Scripts -->
+  <script>
+/**
+ * Lightweight, zero-dependency QR Code generator
+ * Supports alphanumeric and byte encoding up to Version 10 (sufficient for full URLs)
+ * Exports global `QRCode` with `.toCanvas(canvas, text, options)` and `new QRCode(element, options)`
+ */
+(function(global) {
+  'use strict';
+
+  // Galois Field GF(256) tables and math for Reed-Solomon Error Correction
+  const EXP_TABLE = new Uint8Array(512);
+  const LOG_TABLE = new Uint8Array(256);
+  (function initGalois() {
+    let x = 1;
+    for (let i = 0; i < 255; i++) {
+      EXP_TABLE[i] = x;
+      EXP_TABLE[i + 255] = x;
+      LOG_TABLE[x] = i;
+      x <<= 1;
+      if (x & 256) x ^= 0x11d;
+    }
+    LOG_TABLE[0] = 0;
+  })();
+
+  function gfMul(x, y) {
+    if (x === 0 || y === 0) return 0;
+    return EXP_TABLE[LOG_TABLE[x] + LOG_TABLE[y]];
+  }
+
+  function polyMul(p1, p2) {
+    const result = new Uint8Array(p1.length + p2.length - 1);
+    for (let i = 0; i < p1.length; i++) {
+      for (let j = 0; j < p2.length; j++) {
+        result[i + j] ^= gfMul(p1[i], p2[j]);
+      }
+    }
+    return result;
+  }
+
+  function polyMod(dividend, divisor) {
+    const result = new Uint8Array(dividend);
+    for (let i = 0; i < dividend.length - divisor.length + 1; i++) {
+      const coef = result[i];
+      if (coef !== 0) {
+        for (let j = 1; j < divisor.length; j++) {
+          result[i + j] ^= gfMul(divisor[j], coef);
+        }
+      }
+    }
+    return result.slice(dividend.length - divisor.length + 1);
+  }
+
+  function getGeneratorPoly(degree) {
+    let poly = new Uint8Array([1]);
+    for (let i = 0; i < degree; i++) {
+      poly = polyMul(poly, new Uint8Array([1, EXP_TABLE[i]]));
+    }
+    return poly;
+  }
+
+  // Version capacities (byte mode, EC Level M)
+  // [dataCodewords, ecCodewordsPerBlock, numBlocks]
+  const VERSION_INFO = [
+    null,
+    { data: 16, ec: 10, blocks: 1 }, // v1: 21x21 (16 bytes data)
+    { data: 28, ec: 16, blocks: 1 }, // v2: 25x25 (28 bytes data)
+    { data: 44, ec: 26, blocks: 1 }, // v3: 29x29 (44 bytes data)
+    { data: 64, ec: 18, blocks: 2 }, // v4: 33x33 (64 bytes data)
+    { data: 86, ec: 24, blocks: 2 }, // v5: 37x37 (86 bytes data)
+    { data: 108, ec: 16, blocks: 4 }, // v6: 41x41 (108 bytes data)
+    { data: 124, ec: 18, blocks: 4 }, // v7: 45x45 (124 bytes data)
+    { data: 154, ec: 22, blocks: 4 }, // v8: 49x49 (154 bytes data)
+    { data: 182, ec: 22, blocks: 5 }, // v9: 53x53 (182 bytes data)
+    { data: 216, ec: 26, blocks: 5 }, // v10: 57x57 (216 bytes data)
+    { data: 370, ec: 28, blocks: 8 }, // v14: 73x73 (370 bytes data)
+  ];
+
+  // Alignment pattern locations
+  const ALIGNMENT_PATTERNS = [
+    [],
+    [],
+    [6, 18],
+    [6, 22],
+    [6, 26],
+    [6, 30],
+    [6, 34],
+    [6, 22, 38],
+    [6, 24, 42],
+    [6, 26, 46],
+    [6, 28, 50],
+  ];
+
+  function getBestVersion(dataLength) {
+    for (let v = 1; v < VERSION_INFO.length; v++) {
+      if (!VERSION_INFO[v]) continue;
+      const cap = VERSION_INFO[v].data - (v >= 10 ? 3 : 2); // mode + count overhead
+      if (dataLength <= cap) return v;
+    }
+    return 10;
+  }
+
+  function encodeData(text, version) {
+    const encoder = new TextEncoder();
+    const bytes = encoder.encode(text);
+    const info = VERSION_INFO[version] || VERSION_INFO[VERSION_INFO.length - 1];
+    const totalData = info.data;
+
+    // Bit buffer
+    const bits = [];
+    function pushBits(val, len) {
+      for (let i = len - 1; i >= 0; i--) {
+        bits.push((val >> i) & 1);
+      }
+    }
+
+    // Byte mode indicator: 0100
+    pushBits(4, 4);
+    // Character count indicator (8 bits for v1-9, 16 for v10+)
+    const countBits = version >= 10 ? 16 : 8;
+    pushBits(bytes.length, countBits);
+
+    // Data bits
+    for (let i = 0; i < bytes.length; i++) {
+      pushBits(bytes[i], 8);
+    }
+
+    // Terminator (up to 4 bits)
+    const maxBits = totalData * 8;
+    const termLen = Math.min(4, maxBits - bits.length);
+    pushBits(0, termLen);
+
+    // Pad to byte boundary
+    while (bits.length % 8 !== 0) {
+      bits.push(0);
+    }
+
+    // Convert to bytes
+    const dataBytes = [];
+    for (let i = 0; i < bits.length; i += 8) {
+      let b = 0;
+      for (let j = 0; j < 8; j++) {
+        b = (b << 1) | bits[i + j];
+      }
+      dataBytes.push(b);
+    }
+
+    // Pad bytes 0xEC, 0x11
+    const pad = [0xec, 0x11];
+    let padIdx = 0;
+    while (dataBytes.length < totalData) {
+      dataBytes.push(pad[padIdx % 2]);
+      padIdx++;
+    }
+
+    return new Uint8Array(dataBytes);
+  }
+
+  function createMatrix(version) {
+    const size = version * 4 + 17;
+    const matrix = [];
+    const isReserved = [];
+    for (let y = 0; y < size; y++) {
+      matrix.push(new Uint8Array(size));
+      isReserved.push(new Uint8Array(size));
+    }
+
+    function setModule(x, y, val, reserved = true) {
+      if (x < 0 || x >= size || y < 0 || y >= size) return;
+      matrix[y][x] = val ? 1 : 0;
+      if (reserved) isReserved[y][x] = 1;
+    }
+
+    // Finder patterns
+    function addFinder(startX, startY) {
+      for (let y = -1; y <= 7; y++) {
+        for (let x = -1; x <= 7; x++) {
+          const px = startX + x;
+          const py = startY + y;
+          if (px < 0 || px >= size || py < 0 || py >= size) continue;
+          if (x >= 0 && x <= 6 && y >= 0 && y <= 6) {
+            if (x === 0 || x === 6 || y === 0 || y === 6 || (x >= 2 && x <= 4 && y >= 2 && y <= 4)) {
+              setModule(px, py, 1);
+            } else {
+              setModule(px, py, 0);
+            }
+          } else {
+            setModule(px, py, 0); // Separator
+          }
+        }
+      }
+    }
+
+    addFinder(0, 0);
+    addFinder(size - 7, 0);
+    addFinder(0, size - 7);
+
+    // Timing patterns
+    for (let i = 8; i < size - 8; i++) {
+      setModule(i, 6, i % 2 === 0 ? 1 : 0);
+      setModule(6, i, i % 2 === 0 ? 1 : 0);
+    }
+
+    // Alignment patterns (for version >= 2)
+    const alignCoords = ALIGNMENT_PATTERNS[version] || [];
+    for (let i = 0; i < alignCoords.length; i++) {
+      for (let j = 0; j < alignCoords.length; j++) {
+        const ax = alignCoords[i];
+        const ay = alignCoords[j];
+        if (isReserved[ay][ax]) continue; // Skip if overlapping finder
+        for (let dy = -2; dy <= 2; dy++) {
+          for (let dx = -2; dx <= 2; dx++) {
+            const isBlack = Math.max(Math.abs(dx), Math.abs(dy)) !== 1;
+            setModule(ax + dx, ay + dy, isBlack ? 1 : 0);
+          }
+        }
+      }
+    }
+
+    // Dark module
+    setModule(8, size - 8, 1);
+
+    // Reserve Format info areas
+    for (let i = 0; i < 9; i++) {
+      if (i !== 6) {
+        setModule(i, 8, 0);
+        setModule(8, i, 0);
+      }
+    }
+    for (let i = 0; i < 8; i++) {
+      setModule(size - 1 - i, 8, 0);
+      setModule(8, size - 1 - i, 0);
+    }
+
+    return { size, matrix, isReserved };
+  }
+
+  function addFormatInfo(matrix, size, mask = 0) {
+    // Format bits for EC Level M (00) and mask (000 = 0)
+    // Pre-calculated BCH code for EC M with mask 0: 101010000010010 XOR 101010000010010
+    const FORMAT_INFO = [
+      0x5412, 0x5125, 0x5e7c, 0x5b4b, 0x45f9, 0x40ce, 0x4f97, 0x4aa0
+    ];
+    const fmt = FORMAT_INFO[mask % 8];
+
+    // Place around top-left finder and split between other two
+    for (let i = 0; i < 15; i++) {
+      const bit = (fmt >> (14 - i)) & 1;
+      // Top-left
+      if (i <= 5) matrix[i][8] = bit;
+      else if (i === 6) matrix[7][8] = bit;
+      else if (i === 7) matrix[8][8] = bit;
+      else if (i === 8) matrix[8][7] = bit;
+      else matrix[8][14 - i] = bit;
+
+      // Bottom-left / Top-right
+      if (i < 8) {
+        matrix[size - 1 - i][8] = bit;
+      } else {
+        matrix[8][size - 15 + i] = bit;
+      }
+    }
+  }
+
+  function applyData(grid, dataBytes, version) {
+    const info = VERSION_INFO[version] || VERSION_INFO[1];
+    const genPoly = getGeneratorPoly(info.ec);
+
+    // Generate error correction per block
+    const blockDataLen = Math.floor(info.data / info.blocks);
+    const allCodewords = [];
+    const dataBlocks = [];
+    const ecBlocks = [];
+
+    for (let b = 0; b < info.blocks; b++) {
+      const start = b * blockDataLen;
+      const blockData = dataBytes.slice(start, start + blockDataLen);
+      dataBlocks.push(blockData);
+
+      // RS compute
+      const dividend = new Uint8Array(blockData.length + info.ec);
+      dividend.set(blockData);
+      const remainder = polyMod(dividend, genPoly);
+      ecBlocks.push(remainder);
+    }
+
+    // Interleave data
+    for (let i = 0; i < blockDataLen; i++) {
+      for (let b = 0; b < info.blocks; b++) {
+        allCodewords.push(dataBlocks[b][i]);
+      }
+    }
+    // Interleave EC
+    for (let i = 0; i < info.ec; i++) {
+      for (let b = 0; b < info.blocks; b++) {
+        allCodewords.push(ecBlocks[b][i]);
+      }
+    }
+
+    // Place into matrix in zig-zag
+    const { size, matrix, isReserved } = grid;
+    let byteIdx = 0;
+    let bitIdx = 7;
+    let upward = true;
+
+    for (let right = size - 1; right > 0; right -= 2) {
+      if (right === 6) right--; // Skip vertical timing pattern
+      for (let vert = 0; vert < size; vert++) {
+        const y = upward ? size - 1 - vert : vert;
+        for (let dx = 0; dx < 2; dx++) {
+          const x = right - dx;
+          if (isReserved[y][x]) continue;
+
+          let bit = 0;
+          if (byteIdx < allCodewords.length) {
+            bit = (allCodewords[byteIdx] >> bitIdx) & 1;
+            bitIdx--;
+            if (bitIdx < 0) {
+              bitIdx = 7;
+              byteIdx++;
+            }
+          }
+
+          // Apply standard mask 0: (x + y) % 2 === 0
+          if ((x + y) % 2 === 0) {
+            bit ^= 1;
+          }
+
+          matrix[y][x] = bit;
+        }
+      }
+      upward = !upward;
+    }
+
+    addFormatInfo(matrix, size, 0);
+  }
+
+  function renderToCanvas(canvas, matrix, size, options = {}) {
+    const scale = options.scale || Math.max(4, Math.floor((options.width || 220) / size));
+    const margin = options.margin !== undefined ? options.margin : 2;
+    const fullDim = (size + margin * 2) * scale;
+
+    canvas.width = fullDim;
+    canvas.height = fullDim;
+    const ctx = canvas.getContext('2d');
+
+    // High contrast white background for 100% reliable scanner compatibility
+    ctx.fillStyle = options.lightColor || '#FFFFFF';
+    ctx.fillRect(0, 0, fullDim, fullDim);
+
+    ctx.fillStyle = options.darkColor || '#0B1E4A';
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        if (matrix[y][x]) {
+          ctx.fillRect((x + margin) * scale, (y + margin) * scale, scale, scale);
+        }
+      }
+    }
+  }
+
+  // Public API
+  const QRCode = {
+    generate(text, options = {}) {
+      const version = options.version || getBestVersion(text.length);
+      const dataBytes = encodeData(text, version);
+      const grid = createMatrix(version);
+      applyData(grid, dataBytes, version);
+      return { matrix: grid.matrix, size: grid.size };
+    },
+
+    toCanvas(canvas, text, options = {}) {
+      const { matrix, size } = this.generate(text, options);
+      renderToCanvas(canvas, matrix, size, options);
+      return canvas;
+    },
+
+    toDataURL(text, options = {}) {
+      const canvas = document.createElement('canvas');
+      this.toCanvas(canvas, text, options);
+      return canvas.toDataURL('image/png');
+    }
+  };
+
+  global.QRCode = QRCode;
+})(typeof window !== 'undefined' ? window : this);
+
+  </script>
+  <script>
+/**
+ * ExamPlan Syllabus Data & Resource Link Generators
+ * Contains complete topic breakdowns for Years 8 to 13 (IGCSE, AS & A Level)
+ * Includes YouTube and Revision Notes link generators
+ */
+
+const SYLLABUS_DATA = {
+  years: [
+    { id: 'year8', name: 'Year 8', level: 'Key Stage 3' },
+    { id: 'year9', name: 'Year 9', level: 'Pre-IGCSE' },
+    { id: 'year10', name: 'Year 10', level: 'IGCSE' },
+    { id: 'year11', name: 'Year 11', level: 'IGCSE' },
+    { id: 'year12', name: 'Year 12', level: 'AS Level' },
+    { id: 'year13', name: 'Year 13', level: 'A Level' }
+  ],
+
+  // Base subjects with predefined topics
+  subjects: {
+    'Mathematics': {
+      icon: '📐',
+      color: '#3B82F6',
+      topics: {
+        default: [
+          'Number',
+          'Algebra and graphs',
+          'Coordinate geometry',
+          'Geometry',
+          'Mensuration',
+          'Trigonometry',
+          'Transformations and vectors',
+          'Probability',
+          'Statistics',
+          'Sequences'
+        ],
+        // AS & A Level specialized topics
+        advanced: [
+          'Pure Mathematics: Quadratics & Functions',
+          'Pure Mathematics: Coordinate Geometry',
+          'Pure Mathematics: Circular Measure & Trigonometry',
+          'Pure Mathematics: Series & Binomial Expansion',
+          'Pure Mathematics: Differentiation',
+          'Pure Mathematics: Integration',
+          'Pure Mathematics: Vectors in 3D',
+          'Mechanics: Kinematics of Motion',
+          'Mechanics: Forces & Newton\'s Laws',
+          'Mechanics: Momentum & Energy',
+          'Probability & Statistics: Data Representation',
+          'Probability & Statistics: Permutations & Combinations',
+          'Probability & Statistics: Normal Distribution'
+        ]
+      }
+    },
+    'Physics': {
+      icon: '⚡',
+      color: '#8B5CF6',
+      topics: {
+        default: [
+          'Motion, forces and energy',
+          'Thermal physics',
+          'Waves',
+          'Light and sound',
+          'Electricity and magnetism',
+          'Nuclear physics',
+          'Space physics'
+        ],
+        advanced: [
+          'Physical quantities and units',
+          'Kinematics and dynamics',
+          'Forces, density and pressure',
+          'Work, energy and power',
+          'Deformation of solids',
+          'Waves and superposition',
+          'Electric fields and potential',
+          'Current electricity and circuits',
+          'Circular motion and gravitation',
+          'Ideal gases and thermodynamics',
+          'Oscillations and simple harmonic motion',
+          'Magnetic fields and electromagnetic induction',
+          'Quantum physics and wave-particle duality',
+          'Nuclear and particle physics',
+          'Medical physics and ultrasound'
+        ]
+      }
+    },
+    'Chemistry': {
+      icon: '🧪',
+      color: '#EC4899',
+      topics: {
+        default: [
+          'States of matter',
+          'Atoms and bonding',
+          'Stoichiometry',
+          'Electrochemistry',
+          'Chemical energetics',
+          'Rates of reaction',
+          'Acids, bases and salts',
+          'Periodic Table',
+          'Metals',
+          'Organic chemistry'
+        ],
+        advanced: [
+          'Atomic structure and electron configuration',
+          'Chemical bonding and intermolecular forces',
+          'States of matter and gas laws',
+          'Chemical energetics and Hess\'s Law',
+          'Electrochemistry and electrode potentials',
+          'Equilibria and Le Chatelier\'s principle',
+          'Reaction kinetics and rate equations',
+          'Inorganic chemistry and Periodicity',
+          'Group 2 and Group 17 chemistry',
+          'Transition elements and complex ions',
+          'Organic chemistry: Hydrocarbons and halogenoalkanes',
+          'Organic chemistry: Carbonyl compounds and carboxylic acids',
+          'Organic chemistry: Polymers and polymerization',
+          'Analytical techniques: Infrared, NMR, and Mass spectrometry'
+        ]
+      }
+    },
+    'Biology': {
+      icon: '🧬',
+      color: '#10B981',
+      topics: {
+        default: [
+          'Cells',
+          'Enzymes',
+          'Plant nutrition',
+          'Human nutrition',
+          'Transport',
+          'Respiration',
+          'Coordination and response',
+          'Reproduction',
+          'Inheritance',
+          'Ecology'
+        ],
+        advanced: [
+          'Biological molecules (Carbohydrates, Lipids, Proteins)',
+          'Cell structure and microscopy',
+          'Enzyme kinetics and inhibition',
+          'Cell membranes and transport mechanisms',
+          'The mitotic cell cycle and DNA replication',
+          'Nucleic acids and protein synthesis',
+          'Transport in plants (Xylem & Phloem)',
+          'Transport in mammals (Heart & Blood vessels)',
+          'Gas exchange and smoking effects',
+          'Infectious diseases and immunity',
+          'Photosynthesis and light reactions',
+          'Respiration and ATP synthesis',
+          'Homeostasis, kidney and liver function',
+          'Coordination: Nervous system and neuromuscular junction',
+          'Inheritance, genetics and gene technology'
+        ]
+      }
+    },
+    'English': {
+      icon: '📚',
+      color: '#F59E0B',
+      topics: {
+        default: [
+          'Reading comprehension',
+          'Summary writing',
+          'Descriptive writing',
+          'Narrative writing',
+          'Directed writing',
+          'Grammar and punctuation'
+        ],
+        advanced: [
+          'Text analysis and close reading',
+          'Comparative essay writing',
+          'Discursive and argumentative writing',
+          'Language change and historical context',
+          'Child language acquisition',
+          'Language and the individual (Identity)',
+          'Language in a global context (World Englishes)',
+          'Literature: Poetry analysis',
+          'Literature: Drama and Shakespeare',
+          'Literature: Prose fiction critique'
+        ]
+      }
+    },
+    'Computer Science': {
+      icon: '💻',
+      color: '#06B6D4',
+      topics: {
+        default: [
+          'Data representation',
+          'Data transmission',
+          'Hardware',
+          'Software',
+          'Internet',
+          'Algorithms',
+          'Programming',
+          'Databases'
+        ],
+        advanced: [
+          'Information representation & binary manipulation',
+          'Communication and Internet technologies',
+          'Hardware, logic gates and processors',
+          'System software and operating systems',
+          'Security, privacy and data integrity',
+          'Ethics and ownership',
+          'Databases and relational modeling',
+          'Algorithm design and problem solving',
+          'Data types, structures and recursion',
+          'Programming paradigms and OOP',
+          'Software development life cycle'
+        ]
+      }
+    }
+  }
+};
+
+/**
+ * Returns available topics for a subject and year group
+ */
+function getTopicsForSubject(subjectName, yearGroup) {
+  const isAdvanced = yearGroup === 'Year 12' || yearGroup === 'Year 13';
+  const subject = SYLLABUS_DATA.subjects[subjectName];
+
+  if (!subject) {
+    return [];
+  }
+
+  if (isAdvanced && subject.topics.advanced) {
+    return [...subject.topics.advanced];
+  }
+
+  return [...subject.topics.default];
+}
+
+/**
+ * Generates an educational YouTube search link
+ */
+function getYouTubeLink(yearGroup, subjectName, topic) {
+  const levelPrefix = (yearGroup === 'Year 12' || yearGroup === 'Year 13')
+    ? 'A Level'
+    : (yearGroup === 'Year 10' || yearGroup === 'Year 11')
+      ? 'IGCSE'
+      : 'KS3';
+
+  const query = `${levelPrefix} ${subjectName} ${topic} revision explanation`;
+  return `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+}
+
+/**
+ * Generates an educational Revision Notes link
+ * Prioritizes high-quality UK/International syllabus revision resources:
+ * Save My Exams, Physics & Maths Tutor (PMT), BBC Bitesize, Seneca
+ */
+function getNotesLink(yearGroup, subjectName, topic) {
+  const levelPrefix = (yearGroup === 'Year 12' || yearGroup === 'Year 13')
+    ? 'A Level'
+    : (yearGroup === 'Year 10' || yearGroup === 'Year 11')
+      ? 'IGCSE'
+      : 'KS3';
+
+  // Specific direct domain queries for high-yield notes
+  const query = `${levelPrefix} ${subjectName} ${topic} revision notes savemyexams physicsandmathstutor`;
+  return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+}
+
+// Export for browser
+if (typeof window !== 'undefined') {
+  window.SYLLABUS_DATA = SYLLABUS_DATA;
+  window.getTopicsForSubject = getTopicsForSubject;
+  window.getYouTubeLink = getYouTubeLink;
+  window.getNotesLink = getNotesLink;
+}
+
+  </script>
+  <script>
+/**
+ * ExamPlan Revision Timetable Generator
+ * Builds day-by-day revision plans from start date until the final exam date.
+ * Enforces subject weighting (closer exams get more sessions), fair topic rotation,
+ * daily school/weekend time limits, break intervals, and rest days.
+ */
+
+class RevisionPlanner {
+  /**
+   * Generates a complete revision plan based on configuration
+   * @param {Object} config
+   * @returns {Object} plan object with summary and day-by-day schedule
+   */
+  static generatePlan(config) {
+    const {
+      studentName,
+      yearGroup,
+      startDate, // YYYY-MM-DD
+      subjects, // Array of { name, examDate, topics: string[] }
+      weekdayHours = 2,
+      weekendHours = 4,
+      sessionDuration = 45, // 30, 45, or 60 minutes
+      dailyStartTime = '16:30',
+      weekendStartTime = '10:00',
+      restDay = 'none' // 'none', 'friday', 'saturday', 'sunday'
+    } = config;
+
+    if (!subjects || subjects.length === 0) {
+      throw new Error('At least one subject is required.');
+    }
+
+    if (!startDate) {
+      throw new Error('A start date is required.');
+    }
+
+    // Validate and parse dates
+    const startObj = new Date(startDate + 'T00:00:00');
+    if (isNaN(startObj.getTime())) {
+      throw new Error('Invalid start date provided.');
+    }
+
+    // Normalise subjects and ensure each subject has topics & examDate
+    const preparedSubjects = subjects.map(sub => {
+      let finalTopics = sub.topics && sub.topics.length > 0
+        ? [...sub.topics]
+        : getTopicsForSubject(sub.name, yearGroup);
+
+      if (finalTopics.length === 0) {
+        finalTopics = ['Core Concepts & Practice Questions', 'Past Papers & Exam Practice'];
+      }
+
+      const examObj = new Date(sub.examDate + 'T00:00:00');
+      return {
+        id: sub.id || sub.name.toLowerCase().replace(/\s+/g, '-'),
+        name: sub.name,
+        examDate: sub.examDate,
+        examDateObj: examObj,
+        topics: finalTopics,
+        topicPointer: 0,
+        sessionsDone: 0,
+        color: SYLLABUS_DATA.subjects[sub.name]?.color || '#3B82F6',
+        icon: SYLLABUS_DATA.subjects[sub.name]?.icon || '📖'
+      };
+    });
+
+    // Find latest exam date
+    let lastExamObj = new Date(preparedSubjects[0].examDateObj.getTime());
+    for (const sub of preparedSubjects) {
+      if (sub.examDateObj > lastExamObj) {
+        lastExamObj = new Date(sub.examDateObj.getTime());
+      }
+    }
+
+    // Ensure start date is before or equal to last exam date
+    if (startObj > lastExamObj) {
+      throw new Error('The start date must be before or on the final exam date.');
+    }
+
+    const daysSchedule = [];
+    let currentDayObj = new Date(startObj.getTime());
+    let totalSessionsCount = 0;
+    const breakDuration = sessionDuration >= 60 ? 15 : 10;
+
+    // Day of week mapping for rest day check
+    const restDayMap = {
+      'friday': 5,
+      'saturday': 6,
+      'sunday': 0
+    };
+
+    while (currentDayObj <= lastExamObj) {
+      const dateString = RevisionPlanner.formatDateISO(currentDayObj);
+      const dayOfWeek = currentDayObj.getDay();
+      const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+      const isRestDay = restDay !== 'none' && dayOfWeek === restDayMap[restDay.toLowerCase()];
+
+      // Check which subjects are active today (exam date is today or in the future)
+      const activeSubjects = preparedSubjects.filter(sub => {
+        return RevisionPlanner.diffInDays(sub.examDateObj, currentDayObj) >= 0;
+      });
+
+      // Exams occurring today
+      const examsToday = preparedSubjects.filter(sub => {
+        return RevisionPlanner.isSameDay(sub.examDateObj, currentDayObj);
+      });
+
+      const dayPlan = {
+        date: dateString,
+        dayName: RevisionPlanner.getDayName(currentDayObj),
+        formattedDate: RevisionPlanner.formatDisplayDate(currentDayObj),
+        isWeekend,
+        isRestDay,
+        examsToday: examsToday.map(e => ({ name: e.name, icon: e.icon })),
+        sessions: []
+      };
+
+      if (isRestDay) {
+        dayPlan.restMessage = 'Rest & Recharge Day';
+        daysSchedule.push(dayPlan);
+        currentDayObj.setDate(currentDayObj.getDate() + 1);
+        continue;
+      }
+
+      if (activeSubjects.length === 0) {
+        // All exams finished
+        dayPlan.allExamsComplete = true;
+        daysSchedule.push(dayPlan);
+        currentDayObj.setDate(currentDayObj.getDate() + 1);
+        continue;
+      }
+
+      // Calculate total revision time and sessions for this day
+      const targetHours = isWeekend ? weekendHours : weekdayHours;
+      const targetMinutes = Math.round(targetHours * 60);
+      const slotsCount = Math.max(1, Math.floor(targetMinutes / sessionDuration));
+
+      // Determine initial start time for this day
+      let currentMinutes = RevisionPlanner.timeStringToMinutes(
+        isWeekend ? (weekendStartTime || dailyStartTime) : dailyStartTime
+      );
+
+      // Select subjects for each slot based on urgency and topic rotation
+      for (let slot = 0; slot < slotsCount; slot++) {
+        const chosenSubject = RevisionPlanner.selectNextSubject(activeSubjects, currentDayObj);
+        if (!chosenSubject) break;
+
+        const topic = chosenSubject.topics[chosenSubject.topicPointer % chosenSubject.topics.length];
+        chosenSubject.topicPointer++;
+        chosenSubject.sessionsDone++;
+        totalSessionsCount++;
+
+        const startTimeStr = RevisionPlanner.minutesToTimeString(currentMinutes);
+        const endMinutes = currentMinutes + sessionDuration;
+        const endTimeStr = RevisionPlanner.minutesToTimeString(endMinutes);
+
+        const daysUntilExam = RevisionPlanner.diffInDays(chosenSubject.examDateObj, currentDayObj);
+
+        const session = {
+          id: `s_${dateString}_${slot + 1}`,
+          sessionNumber: slot + 1,
+          startTime: startTimeStr,
+          endTime: endTimeStr,
+          duration: sessionDuration,
+          subjectName: chosenSubject.name,
+          subjectColor: chosenSubject.color,
+          subjectIcon: chosenSubject.icon,
+          topic: topic,
+          daysUntilExam: daysUntilExam,
+          youtubeUrl: getYouTubeLink(yearGroup, chosenSubject.name, topic),
+          notesUrl: getNotesLink(yearGroup, chosenSubject.name, topic)
+        };
+
+        dayPlan.sessions.push(session);
+        // Advance time including break
+        currentMinutes = endMinutes + breakDuration;
+      }
+
+      daysSchedule.push(dayPlan);
+      currentDayObj.setDate(currentDayObj.getDate() + 1);
+    }
+
+    // Build plan summary
+    const totalStudyHours = Math.round((totalSessionsCount * sessionDuration / 60) * 10) / 10;
+
+    return {
+      id: 'plan_' + Math.random().toString(36).substring(2, 9) + Date.now().toString(36),
+      studentName,
+      yearGroup,
+      startDate,
+      lastExamDate: RevisionPlanner.formatDateISO(lastExamObj),
+      status: 'active', // 'active' or 'stopped'
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      settings: {
+        weekdayHours,
+        weekendHours,
+        sessionDuration,
+        dailyStartTime,
+        restDay
+      },
+      summary: {
+        totalDays: daysSchedule.length,
+        totalSessions: totalSessionsCount,
+        totalStudyHours: totalStudyHours,
+        subjectsCount: preparedSubjects.length,
+        subjectsBreakdown: preparedSubjects.map(s => ({
+          name: s.name,
+          examDate: s.examDate,
+          totalTopics: s.topics.length,
+          sessionsScheduled: s.sessionsDone
+        }))
+      },
+      schedule: daysSchedule
+    };
+  }
+
+  /**
+   * Urgency algorithm:
+   * Chooses subject with highest urgency score on current date.
+   * Urgency is higher when exam date is near, balanced with fairness.
+   */
+  static selectNextSubject(activeSubjects, currentDateObj) {
+    if (activeSubjects.length === 1) {
+      return activeSubjects[0];
+    }
+
+    let bestSubject = null;
+    let highestScore = -Infinity;
+
+    const totalSessions = activeSubjects.reduce((sum, s) => sum + s.sessionsDone, 0) || 1;
+
+    for (const sub of activeSubjects) {
+      const daysUntilExam = Math.max(0, RevisionPlanner.diffInDays(sub.examDateObj, currentDateObj));
+
+      // Base urgency: exams within 3 days get huge priority, within 10 days high priority
+      let urgencyWeight = 1.0;
+      if (daysUntilExam <= 1) {
+        urgencyWeight = 6.0;
+      } else if (daysUntilExam <= 3) {
+        urgencyWeight = 4.0;
+      } else if (daysUntilExam <= 7) {
+        urgencyWeight = 2.5;
+      } else if (daysUntilExam <= 14) {
+        urgencyWeight = 1.8;
+      } else {
+        urgencyWeight = 1.0 + (30 / Math.max(10, daysUntilExam));
+      }
+
+      // Fairness penalty based on sessions already done for this subject
+      const share = sub.sessionsDone / totalSessions;
+      const score = (urgencyWeight * 1.5) - (share * 2.0) + (Math.random() * 0.1);
+
+      if (score > highestScore) {
+        highestScore = score;
+        bestSubject = sub;
+      }
+    }
+
+    return bestSubject;
+  }
+
+  static diffInDays(dateA, dateB) {
+    const msPerDay = 1000 * 60 * 60 * 24;
+    const a = Date.UTC(dateA.getFullYear(), dateA.getMonth(), dateA.getDate());
+    const b = Date.UTC(dateB.getFullYear(), dateB.getMonth(), dateB.getDate());
+    return Math.floor((a - b) / msPerDay);
+  }
+
+  static isSameDay(dateA, dateB) {
+    return dateA.getFullYear() === dateB.getFullYear() &&
+           dateA.getMonth() === dateB.getMonth() &&
+           dateA.getDate() === dateB.getDate();
+  }
+
+  static formatDateISO(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  static formatDisplayDate(date) {
+    const options = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
+    return date.toLocaleDateString('en-GB', options);
+  }
+
+  static getDayName(date) {
+    return date.toLocaleDateString('en-GB', { weekday: 'long' });
+  }
+
+  static timeStringToMinutes(timeStr) {
+    if (!timeStr || !timeStr.includes(':')) return 16 * 60 + 30; // default 16:30
+    const [h, m] = timeStr.split(':').map(Number);
+    return (h || 0) * 60 + (m || 0);
+  }
+
+  static minutesToTimeString(minutes) {
+    const h = Math.floor(minutes / 60) % 24;
+    const m = minutes % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  }
+}
+
+// Export for browser
+if (typeof window !== 'undefined') {
+  window.RevisionPlanner = RevisionPlanner;
+}
+
+  </script>
+  <script>
+/**
+ * ExamPlan Tutor Authentication & Security
+ * Protects tutor functionality with a passcode/PIN.
+ * Students only access view-only mode and cannot access tutor controls.
+ */
+
+const TutorAuth = {
+  STORAGE_KEY_PIN: 'examplan_tutor_pin_hash',
+  STORAGE_KEY_AUTH_SESSION: 'examplan_tutor_session_active',
+  DEFAULT_PIN: '2026', // Initial default PIN
+
+  /**
+   * Initializes PIN if not yet set
+   */
+  init() {
+    if (!localStorage.getItem(this.STORAGE_KEY_PIN)) {
+      this.setPIN(this.DEFAULT_PIN);
+    }
+  },
+
+  /**
+   * Simple hash function for client-side passcode protection
+   */
+  hashPin(pin) {
+    let hash = 0;
+    const str = 'salt_examplan_' + String(pin).trim();
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash |= 0;
+    }
+    return 'h_' + Math.abs(hash).toString(16);
+  },
+
+  /**
+   * Sets or updates the tutor PIN
+   */
+  setPIN(newPin) {
+    if (!newPin || String(newPin).trim().length < 4) {
+      throw new Error('PIN must be at least 4 digits/characters.');
+    }
+    const hash = this.hashPin(newPin);
+    localStorage.setItem(this.STORAGE_KEY_PIN, hash);
+    return true;
+  },
+
+  /**
+   * Validates entered PIN against stored hash
+   */
+  verifyPIN(enteredPin) {
+    const storedHash = localStorage.getItem(this.STORAGE_KEY_PIN) || this.hashPin(this.DEFAULT_PIN);
+    const enteredHash = this.hashPin(enteredPin);
+    const isValid = (enteredHash === storedHash);
+    if (isValid) {
+      this.setAuthenticated(true);
+    }
+    return isValid;
+  },
+
+  /**
+   * Checks if tutor is currently authenticated on this device
+   */
+  isAuthenticated() {
+    return localStorage.getItem(this.STORAGE_KEY_AUTH_SESSION) === 'true';
+  },
+
+  /**
+   * Marks tutor session as active or inactive
+   */
+  setAuthenticated(active) {
+    if (active) {
+      localStorage.setItem(this.STORAGE_KEY_AUTH_SESSION, 'true');
+    } else {
+      localStorage.removeItem(this.STORAGE_KEY_AUTH_SESSION);
+    }
+  },
+
+  /**
+   * Logs out tutor
+   */
+  lock() {
+    this.setAuthenticated(false);
+  }
+};
+
+// Initialize on load
+TutorAuth.init();
+
+if (typeof window !== 'undefined') {
+  window.TutorAuth = TutorAuth;
+}
+
+  </script>
+  <script>
+/**
+ * ExamPlan Data Storage & Real-Time Sync Service
+ * Supports:
+ * 1. Firebase Firestore (real-time cross-device sync across tutor & students)
+ * 2. Local Storage + BroadcastChannel fallback (offline / local development)
+ */
+
+const StorageService = {
+  FIREBASE_CONFIG_KEY: 'examplan_firebase_config_custom',
+  LOCAL_PLANS_KEY: 'examplan_saved_plans_local',
+  db: null,
+  isFirebaseActive: false,
+  broadcastChannel: null,
+
+  init() {
+    // Setup cross-tab local broadcast channel for testing
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        this.broadcastChannel = new BroadcastChannel('examplan_sync_channel');
+      } catch (e) {
+        console.warn('BroadcastChannel not supported:', e);
+      }
+    }
+
+    // Try initializing Firebase
+    this.initFirebase();
+  },
+
+  getSavedFirebaseConfig() {
+    try {
+      const stored = localStorage.getItem(this.FIREBASE_CONFIG_KEY);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (e) {
+      console.warn('Error reading saved Firebase config:', e);
+    }
+    return null;
+  },
+
+  saveFirebaseConfig(configObj) {
+    localStorage.setItem(this.FIREBASE_CONFIG_KEY, JSON.stringify(configObj));
+    return this.initFirebase();
+  },
+
+  clearFirebaseConfig() {
+    localStorage.removeItem(this.FIREBASE_CONFIG_KEY);
+    this.isFirebaseActive = false;
+    this.db = null;
+  },
+
+  initFirebase() {
+    const config = this.getSavedFirebaseConfig();
+    if (!config || !config.apiKey || !config.projectId) {
+      this.isFirebaseActive = false;
+      this.db = null;
+      return false;
+    }
+
+    if (typeof firebase === 'undefined') {
+      console.warn('Firebase library not loaded yet.');
+      this.isFirebaseActive = false;
+      return false;
+    }
+
+    try {
+      if (!firebase.apps || !firebase.apps.length) {
+        firebase.initializeApp(config);
+      }
+      this.db = firebase.firestore();
+      this.isFirebaseActive = true;
+      console.log('Firebase Firestore successfully initialized for project:', config.projectId);
+      return true;
+    } catch (err) {
+      console.error('Failed to initialize Firebase Firestore:', err);
+      this.isFirebaseActive = false;
+      this.db = null;
+      return false;
+    }
+  },
+
+  /**
+   * Save or update a revision plan
+   */
+  async savePlan(plan) {
+    if (!plan || !plan.id) {
+      throw new Error('Valid plan with ID is required.');
+    }
+
+    plan.updatedAt = new Date().toISOString();
+
+    // 1. Always update local storage
+    const localPlans = this.getLocalPlans();
+    localPlans[plan.id] = plan;
+    localStorage.setItem(this.LOCAL_PLANS_KEY, JSON.stringify(localPlans));
+
+    // Notify local channel
+    if (this.broadcastChannel) {
+      this.broadcastChannel.postMessage({ type: 'PLAN_UPDATED', planId: plan.id, plan });
+    }
+
+    // 2. If Firebase is active, sync to Firestore
+    if (this.isFirebaseActive && this.db) {
+      try {
+        await this.db.collection('exam_plans').doc(plan.id).set(plan);
+        console.log('Plan synced to Firestore:', plan.id);
+      } catch (err) {
+        console.error('Error saving plan to Firestore:', err);
+        throw new Error('Could not sync to cloud database. Please check Firebase settings.');
+      }
+    }
+
+    return plan;
+  },
+
+  /**
+   * Update plan status (e.g. 'active' or 'stopped')
+   */
+  async updatePlanStatus(planId, status) {
+    // 1. Update in local storage
+    const localPlans = this.getLocalPlans();
+    if (localPlans[planId]) {
+      localPlans[planId].status = status;
+      localPlans[planId].updatedAt = new Date().toISOString();
+      localStorage.setItem(this.LOCAL_PLANS_KEY, JSON.stringify(localPlans));
+
+      if (this.broadcastChannel) {
+        this.broadcastChannel.postMessage({
+          type: 'STATUS_UPDATED',
+          planId,
+          status,
+          plan: localPlans[planId]
+        });
+      }
+    }
+
+    // 2. Update in Firestore
+    if (this.isFirebaseActive && this.db) {
+      try {
+        await this.db.collection('exam_plans').doc(planId).update({
+          status: status,
+          updatedAt: new Date().toISOString()
+        });
+        console.log(`Plan ${planId} status set to ${status} in Firestore`);
+      } catch (err) {
+        console.error('Error updating status in Firestore:', err);
+        throw err;
+      }
+    }
+
+    return true;
+  },
+
+  /**
+   * Delete a plan
+   */
+  async deletePlan(planId) {
+    // 1. Local
+    const localPlans = this.getLocalPlans();
+    delete localPlans[planId];
+    localStorage.setItem(this.LOCAL_PLANS_KEY, JSON.stringify(localPlans));
+
+    if (this.broadcastChannel) {
+      this.broadcastChannel.postMessage({ type: 'PLAN_DELETED', planId });
+    }
+
+    // 2. Cloud
+    if (this.isFirebaseActive && this.db) {
+      try {
+        await this.db.collection('exam_plans').doc(planId).delete();
+      } catch (err) {
+        console.error('Error deleting from Firestore:', err);
+      }
+    }
+    return true;
+  },
+
+  /**
+   * Fetch single plan
+   */
+  async getPlan(planId) {
+    // Try Firestore first if online
+    if (this.isFirebaseActive && this.db) {
+      try {
+        const doc = await this.db.collection('exam_plans').doc(planId).get();
+        if (doc.exists) {
+          const cloudPlan = doc.data();
+          // Update local cache
+          const localPlans = this.getLocalPlans();
+          localPlans[planId] = cloudPlan;
+          localStorage.setItem(this.LOCAL_PLANS_KEY, JSON.stringify(localPlans));
+          return cloudPlan;
+        }
+      } catch (err) {
+        console.warn('Firestore fetch failed, checking local storage:', err);
+      }
+    }
+
+    // Fallback to local storage
+    const localPlans = this.getLocalPlans();
+    return localPlans[planId] || null;
+  },
+
+  /**
+   * Get all plans (for Tutor dashboard)
+   */
+  async getAllPlans() {
+    let cloudPlans = null;
+
+    if (this.isFirebaseActive && this.db) {
+      try {
+        const snapshot = await this.db.collection('exam_plans').orderBy('createdAt', 'desc').get();
+        cloudPlans = {};
+        snapshot.forEach(doc => {
+          cloudPlans[doc.id] = doc.data();
+        });
+
+        // Merge with local storage
+        localStorage.setItem(this.LOCAL_PLANS_KEY, JSON.stringify(cloudPlans));
+        return Object.values(cloudPlans);
+      } catch (err) {
+        console.warn('Failed to fetch all plans from Firestore, falling back to local:', err);
+      }
+    }
+
+    const localPlans = this.getLocalPlans();
+    const list = Object.values(localPlans);
+    // Sort newest first
+    list.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    return list;
+  },
+
+  /**
+   * Real-time subscription to a plan (Crucial for instant student updates when stopped/reconnected)
+   * Returns an unsubscribe function.
+   */
+  subscribeToPlan(planId, onUpdate, onError) {
+    let unsubFirestore = null;
+
+    // 1. Firestore real-time listener (fires within milliseconds of tutor stop/reconnect)
+    if (this.isFirebaseActive && this.db) {
+      try {
+        unsubFirestore = this.db.collection('exam_plans').doc(planId).onSnapshot(
+          (doc) => {
+            if (doc.exists) {
+              const data = doc.data();
+              // Cache locally
+              const localPlans = this.getLocalPlans();
+              localPlans[planId] = data;
+              localStorage.setItem(this.LOCAL_PLANS_KEY, JSON.stringify(localPlans));
+              onUpdate(data);
+            } else {
+              onError && onError('Plan not found in cloud database.');
+            }
+          },
+          (err) => {
+            console.error('Firestore subscription error:', err);
+            onError && onError(err.message);
+          }
+        );
+      } catch (e) {
+        console.warn('Could not establish Firestore subscription:', e);
+      }
+    }
+
+    // 2. Local Broadcast Channel listener (for multi-tab / testing)
+    const handleBroadcast = (event) => {
+      const data = event.data;
+      if (data && data.planId === planId) {
+        if (data.type === 'STATUS_UPDATED' || data.type === 'PLAN_UPDATED') {
+          const updatedPlan = this.getLocalPlans()[planId];
+          if (updatedPlan) {
+            onUpdate(updatedPlan);
+          }
+        }
+      }
+    };
+
+    if (this.broadcastChannel) {
+      this.broadcastChannel.addEventListener('message', handleBroadcast);
+    }
+
+    // 3. Fallback polling interval (every 15 seconds) to guarantee the 20-second brief requirement
+    const pollInterval = setInterval(async () => {
+      // Check local storage or refetch
+      const current = await this.getPlan(planId);
+      if (current) {
+        onUpdate(current);
+      }
+    }, 15000);
+
+    // Initial immediate read
+    this.getPlan(planId).then(plan => {
+      if (plan) onUpdate(plan);
+      else onError && onError('Plan not found.');
+    });
+
+    // Return combined unsubscribe handler
+    return () => {
+      if (unsubFirestore) unsubFirestore();
+      if (this.broadcastChannel) {
+        this.broadcastChannel.removeEventListener('message', handleBroadcast);
+      }
+      clearInterval(pollInterval);
+    };
+  },
+
+  getLocalPlans() {
+    try {
+      const raw = localStorage.getItem(this.LOCAL_PLANS_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      return {};
+    }
+  }
+};
+
+// Initialize on script load
+StorageService.init();
+
+if (typeof window !== 'undefined') {
+  window.StorageService = StorageService;
+}
+
+  </script>
+  <script>
+/**
+ * ExamPlan Main Application Controller
+ * Handles routing, student view, tutor creation wizard,
+ * compact saved plans list, real-time stop/reconnect, QR codes & printing.
+ */
+
+const App = {
+  currentPlanId: null,
+  currentPlanData: null,
+  planSubscriptionUnsub: null,
+  activeTutorTab: 'create', // 'create' or 'saved'
+  generatedPlanDraft: null,
+  activeStudentFilter: 'all', // 'today', 'tomorrow', 'all'
+  selectedYearGroup: 'Year 11',
+  selectedSubjects: {}, // { 'Mathematics': { examDate: '...', topics: [...], customTopics: [...] } }
+  activeModalPlan: null,
+
+  init() {
+    this.detectRoute();
+    this.updateCloudStatusIndicator();
+
+    if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+      navigator.serviceWorker.register('./sw.js').catch(err => {
+        console.log('ServiceWorker registration optional notice:', err);
+      });
+    }
+
+    // Listen to window hash or history popstate
+    window.addEventListener('popstate', () => this.detectRoute());
+  },
+
+  /**
+   * Router: determines if viewing as Student (?plan=...) or Tutor
+   */
+  detectRoute() {
+    const params = new URLSearchParams(window.location.search);
+    const hash = window.location.hash;
+    let planId = params.get('plan');
+
+    if (!planId && hash.startsWith('#/plan/')) {
+      planId = hash.replace('#/plan/', '');
+    }
+
+    if (planId) {
+      // STUDENT VIEW
+      this.currentPlanId = planId;
+      this.renderStudentView(planId);
+    } else {
+      // TUTOR VIEW
+      this.currentPlanId = null;
+      if (this.planSubscriptionUnsub) {
+        this.planSubscriptionUnsub();
+        this.planSubscriptionUnsub = null;
+      }
+      this.checkTutorAccess();
+    }
+  },
+
+  /**
+   * STUDENT VIEW CONTROLLER
+   */
+  async renderStudentView(planId) {
+    // Student mode UI header
+    document.getElementById('roleBadge').textContent = 'STUDENT';
+    document.getElementById('roleBadge').style.backgroundColor = '#10B981';
+    document.getElementById('tutorNav').style.display = 'none';
+    document.getElementById('headerActions').innerHTML = '';
+
+    const main = document.getElementById('mainContent');
+    main.innerHTML = `
+      <div style="text-align: center; padding: 40px 20px;">
+        <div style="font-size: 2.5rem; margin-bottom: 12px;">⏳</div>
+        <h3 style="color: #FFFFFF; font-size: 1.2rem;">Loading your revision plan...</h3>
+        <p style="color: #93C5FD; font-size: 0.9rem; margin-top: 6px;">Connecting to tutor server...</p>
+      </div>
+    `;
+
+    // Unsubscribe previous subscription if any
+    if (this.planSubscriptionUnsub) {
+      this.planSubscriptionUnsub();
+    }
+
+    // Subscribe to real-time updates (fires automatically when tutor stops/reconnects)
+    this.planSubscriptionUnsub = StorageService.subscribeToPlan(
+      planId,
+      (plan) => {
+        this.currentPlanData = plan;
+        this.updateStudentViewUI(plan);
+      },
+      (error) => {
+        main.innerHTML = `
+          <div class="card" style="text-align: center; padding: 30px 20px; border-color: #DC2626;">
+            <div style="font-size: 2.5rem; margin-bottom: 10px;">⚠️</div>
+            <h2 style="color: #F87171; font-size: 1.3rem;">Revision Plan Not Found</h2>
+            <p style="color: #CBD5E1; margin: 12px 0;">This revision link may be invalid or has expired.</p>
+            <p style="color: #93C5FD; font-size: 0.9rem;">Please check with your tutor to get a new QR code or link.</p>
+          </div>
+        `;
+      }
+    );
+  },
+
+  /**
+   * Renders Student UI based on plan data and stopped/active status
+   */
+  updateStudentViewUI(plan) {
+    const main = document.getElementById('mainContent');
+
+    // CRITICAL BRIEF REQUIREMENT: THE STOP BUTTON (Section 5)
+    // "When the tutor presses Stop, the student's plan is replaced by this message:
+    // 'Your plan has been stopped. Please go to your tutor to reconnect your plan.'
+    // The plan content must not be shown while stopped."
+    if (plan.status === 'stopped') {
+      main.innerHTML = `
+        <div class="stopped-notice-screen">
+          <span class="stopped-icon">🛑</span>
+          <h2 class="stopped-title">Plan Stopped</h2>
+          <p class="stopped-message">
+            Your plan has been stopped. Please go to your tutor to reconnect your plan.
+          </p>
+        </div>
+      `;
+      return;
+    }
+
+    // PLAN IS ACTIVE: Render full student revision timetable
+    const summary = plan.summary || {};
+    const schedule = plan.schedule || [];
+
+    // Filter schedule based on student filter (today, tomorrow, all)
+    const todayISO = RevisionPlanner.formatDateISO(new Date());
+    const tomorrowObj = new Date();
+    tomorrowObj.setDate(tomorrowObj.getDate() + 1);
+    const tomorrowISO = RevisionPlanner.formatDateISO(tomorrowObj);
+
+    let filteredSchedule = schedule;
+    if (this.activeStudentFilter === 'today') {
+      filteredSchedule = schedule.filter(d => d.date === todayISO);
+    } else if (this.activeStudentFilter === 'tomorrow') {
+      filteredSchedule = schedule.filter(d => d.date === tomorrowISO);
+    }
+
+    let scheduleHtml = '';
+    if (filteredSchedule.length === 0) {
+      scheduleHtml = `
+        <div class="card" style="text-align: center; padding: 24px;">
+          <p style="color: #93C5FD;">No revision sessions scheduled for this period.</p>
+          <button class="btn btn-secondary btn-sm" style="margin-top: 10px;" onclick="App.setStudentFilter('all')">
+            Show All Days
+          </button>
+        </div>
+      `;
+    } else {
+      scheduleHtml = filteredSchedule.map(day => {
+        // Rest day card
+        if (day.isRestDay) {
+          return `
+            <div class="schedule-day-card" style="border-left: 4px solid #10B981;">
+              <div class="schedule-day-header">
+                <span class="schedule-day-date">${day.formattedDate}</span>
+                <span class="schedule-day-badge" style="background: rgba(16, 185, 129, 0.2); color: #34D399;">🌱 Rest Day</span>
+              </div>
+              <p style="color: #CBD5E1; font-size: 0.95rem; margin-top: 4px;">
+                Take a break today! Rest and recharge your brain.
+              </p>
+            </div>
+          `;
+        }
+
+        // Sessions list for this day
+        const sessionsHtml = day.sessions && day.sessions.length > 0
+          ? day.sessions.map(s => `
+            <div class="session-slot-card" style="border-left-color: ${s.subjectColor || '#3B82F6'};">
+              <div class="session-top-row">
+                <span class="session-time-badge">
+                  ⏱️ ${s.startTime} – ${s.endTime} (${s.duration}m)
+                </span>
+                <span class="session-subject-badge" style="background-color: ${s.subjectColor || '#3B82F6'};">
+                  ${s.subjectIcon || '📖'} ${s.subjectName}
+                </span>
+              </div>
+              <div class="session-topic-title">
+                ${s.topic}
+              </div>
+              <!-- Study Links on every topic (Section 3 requirement) -->
+              <div class="session-links-row">
+                <a href="${s.youtubeUrl}" target="_blank" rel="noopener noreferrer" class="study-link-btn link-youtube">
+                  ▶️ YouTube Video
+                </a>
+                <a href="${s.notesUrl}" target="_blank" rel="noopener noreferrer" class="study-link-btn link-notes">
+                  📖 Revision Notes
+                </a>
+              </div>
+            </div>
+          `).join('')
+          : `<p style="color: #94A3B8; font-size: 0.9rem;">No revision sessions for today.</p>`;
+
+        return `
+          <div class="schedule-day-card">
+            <div class="schedule-day-header">
+              <span class="schedule-day-date">📅 ${day.formattedDate}</span>
+              <span class="schedule-day-badge">${day.dayName}</span>
+            </div>
+            ${day.examsToday && day.examsToday.length > 0 ? `
+              <div style="background: rgba(220, 38, 38, 0.2); border: 1px solid #DC2626; border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; color: #FCA5A5; font-size: 0.85rem; font-weight: 700;">
+                🎯 EXAM TODAY: ${day.examsToday.map(e => e.name).join(', ')}!
+              </div>
+            ` : ''}
+            <div>
+              ${sessionsHtml}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    main.innerHTML = `
+      <!-- Student Top Header Banner -->
+      <div class="student-banner">
+        <h1 class="student-name-title">${this.escapeHtml(plan.studentName)}'s Revision Plan</h1>
+        <p class="student-subtitle">${plan.yearGroup} Revision Timetable</p>
+
+        <div class="student-stats-row">
+          <div class="student-stat-box">
+            <span class="student-stat-val">${summary.totalSessions || 0}</span>
+            <span class="student-stat-lbl">Sessions</span>
+          </div>
+          <div class="student-stat-box">
+            <span class="student-stat-val">${summary.totalStudyHours || 0}h</span>
+            <span class="student-stat-lbl">Study Time</span>
+          </div>
+          <div class="student-stat-box">
+            <span class="student-stat-val">${summary.subjectsCount || 0}</span>
+            <span class="student-stat-lbl">Subjects</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Filter Navigation -->
+      <div style="display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px;">
+        <button class="btn btn-sm ${this.activeStudentFilter === 'all' ? 'btn-primary' : 'btn-secondary'}" onclick="App.setStudentFilter('all')">
+          📅 All Days (${schedule.length})
+        </button>
+        <button class="btn btn-sm ${this.activeStudentFilter === 'today' ? 'btn-primary' : 'btn-secondary'}" onclick="App.setStudentFilter('today')">
+          ☀️ Today
+        </button>
+        <button class="btn btn-sm ${this.activeStudentFilter === 'tomorrow' ? 'btn-primary' : 'btn-secondary'}" onclick="App.setStudentFilter('tomorrow')">
+          🌅 Tomorrow
+        </button>
+      </div>
+
+      <!-- Daily Timetable List -->
+      <div id="studentScheduleContainer">
+        ${scheduleHtml}
+      </div>
+    `;
+  },
+
+  setStudentFilter(filterType) {
+    this.activeStudentFilter = filterType;
+    if (this.currentPlanData) {
+      this.updateStudentViewUI(this.currentPlanData);
+    }
+  },
+
+  /**
+   * TUTOR AUTHENTICATION & ACCESS
+   */
+  checkTutorAccess() {
+    if (TutorAuth.isAuthenticated()) {
+      this.renderTutorDashboard();
+    } else {
+      this.renderTutorPinEntry();
+    }
+  },
+
+  renderTutorPinEntry() {
+    document.getElementById('roleBadge').textContent = 'LOCKED';
+    document.getElementById('roleBadge').style.backgroundColor = '#DC2626';
+    document.getElementById('tutorNav').style.display = 'none';
+    document.getElementById('headerActions').innerHTML = '';
+
+    const main = document.getElementById('mainContent');
+    main.innerHTML = `
+      <div class="card" style="max-width: 420px; margin: 30px auto; text-align: center; padding: 30px 20px;">
+        <div style="font-size: 3rem; margin-bottom: 12px;">🔒</div>
+        <h2 class="card-title" style="justify-content: center; font-size: 1.4rem;">Tutor Protected Area</h2>
+        <p style="color: #CBD5E1; font-size: 0.9rem; margin-bottom: 24px;">
+          Please enter your tutor PIN to manage and create revision plans.
+        </p>
+
+        <form id="tutorPinForm" onsubmit="App.handlePinSubmit(event)">
+          <div class="form-group" style="text-align: left;">
+            <label class="form-label" style="text-align: center; display: block;">Tutor Passcode / PIN</label>
+            <input 
+              type="password" 
+              id="tutorPinInput" 
+              maxlength="10" 
+              placeholder="Enter PIN" 
+              autocomplete="current-password"
+              style="text-align: center; font-size: 1.5rem; letter-spacing: 6px; font-weight: 700;"
+              required
+              autofocus
+            >
+            <div id="pinErrorMessage" style="color: #F87171; font-size: 0.85rem; margin-top: 8px; text-align: center; display: none;">
+              Incorrect PIN. Please try again.
+            </div>
+            <div style="margin-top: 10px; font-size: 0.8rem; color: #93C5FD; text-align: center;">
+              Initial default passcode: <strong>2026</strong>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full" style="font-size: 1.05rem; padding: 14px;">
+            🔓 Unlock Tutor Dashboard
+          </button>
+        </form>
+      </div>
+    `;
+  },
+
+  handlePinSubmit(e) {
+    e.preventDefault();
+    const pin = document.getElementById('tutorPinInput').value;
+    const isValid = TutorAuth.verifyPIN(pin);
+    if (isValid) {
+      this.renderTutorDashboard();
+    } else {
+      const err = document.getElementById('pinErrorMessage');
+      err.style.display = 'block';
+      document.getElementById('tutorPinInput').value = '';
+      document.getElementById('tutorPinInput').focus();
+    }
+  },
+
+  promptTutorLogin() {
+    window.location.search = '';
+    window.location.hash = '';
+    this.detectRoute();
+  },
+
+  lockTutor() {
+    TutorAuth.lock();
+    this.renderTutorPinEntry();
+  },
+
+  /**
+   * TUTOR DASHBOARD
+   */
+  renderTutorDashboard() {
+    document.getElementById('roleBadge').textContent = 'TUTOR';
+    document.getElementById('roleBadge').style.backgroundColor = '#2563EB';
+    document.getElementById('tutorNav').style.display = 'flex';
+
+    // Header Actions: Cloud Settings & Lock button
+    const headerActions = document.getElementById('headerActions');
+    headerActions.innerHTML = `
+      <button class="btn btn-secondary btn-sm" onclick="App.openCloudSettingsModal()" title="Cloud Sync Settings">
+        ☁️ Sync
+      </button>
+      <button class="btn btn-secondary btn-sm" onclick="App.openChangePinModal()" title="Change PIN">
+        🔑 PIN
+      </button>
+      <button class="btn btn-ghost btn-sm" onclick="App.lockTutor()" title="Lock Tutor Mode">
+        🔒
+      </button>
+    `;
+
+    this.switchTutorTab(this.activeTutorTab);
+    this.refreshSavedCountBadge();
+  },
+
+  switchTutorTab(tab) {
+    this.activeTutorTab = tab;
+    document.getElementById('tabCreateBtn').classList.toggle('active', tab === 'create');
+    document.getElementById('tabSavedBtn').classList.toggle('active', tab === 'saved');
+
+    if (tab === 'create') {
+      this.renderPlanCreatorForm();
+    } else {
+      this.renderSavedPlansList();
+    }
+  },
+
+  /**
+   * TUTOR TAB 1: CREATE PLAN FORM
+   */
+  renderPlanCreatorForm() {
+    const main = document.getElementById('mainContent');
+
+    // Default start date = today
+    const today = RevisionPlanner.formatDateISO(new Date());
+
+    // Initialize default subjects state if empty
+    if (Object.keys(this.selectedSubjects).length === 0) {
+      const defaultExamDate = this.getDefaultExamDate();
+      this.selectedSubjects = {
+        'Mathematics': {
+          selected: true,
+          examDate: defaultExamDate,
+          topics: getTopicsForSubject('Mathematics', this.selectedYearGroup),
+          customTopics: [],
+          expanded: false
+        },
+        'Physics': {
+          selected: true,
+          examDate: defaultExamDate,
+          topics: getTopicsForSubject('Physics', this.selectedYearGroup),
+          customTopics: [],
+          expanded: false
+        }
+      };
+    }
+
+    main.innerHTML = `
+      <div class="card">
+        <h2 class="card-title">✏️ Create Revision Plan</h2>
+        <p class="card-subtitle">Fill in the details below to generate a tailored timetable for the student.</p>
+
+        <!-- 1. Student Info -->
+        <div class="form-group">
+          <label class="form-label" for="studentNameInput">1. Student Name *</label>
+          <input type="text" id="studentNameInput" placeholder="e.g. Alex Smith" required>
+        </div>
+
+        <!-- 2. Year Group -->
+        <div class="form-group">
+          <label class="form-label">2. Year Group</label>
+          <div class="year-pills" id="yearPillsContainer">
+            ${SYLLABUS_DATA.years.map(y => `
+              <div class="year-pill ${this.selectedYearGroup === y.name ? 'active' : ''}" onclick="App.selectYearGroup('${y.name}')">
+                ${y.name}
+                <small>${y.level}</small>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- 3. Start Date (FIXED FULL WIDTH CALENDAR PICKER) -->
+        <div class="form-group">
+          <label class="form-label" for="startDateInput">3. Start Date for Revising *</label>
+          <input 
+            type="date" 
+            id="startDateInput" 
+            value="${today}" 
+            min="${today}" 
+            onchange="App.handleStartDateChange(this.value)"
+            required
+          >
+          <div class="date-confirm-pill" id="startDatePill">
+            📅 ${RevisionPlanner.formatDisplayDate(new Date(today + 'T00:00:00'))}
+          </div>
+        </div>
+
+        <!-- 4. Subjects & Exam Dates -->
+        <div class="form-group" style="margin-top: 24px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <label class="form-label" style="margin-bottom: 0;">4. Subjects & Exam Dates *</label>
+            <button class="btn btn-secondary btn-sm" type="button" onclick="App.showAddCustomSubjectPrompt()">
+              + Add Custom Subject
+            </button>
+          </div>
+          <p class="form-hint" style="margin-bottom: 12px;">
+            Tick subjects to include, set each subject's exam date, and select topics to revise.
+          </p>
+
+          <div class="subjects-selection-list" id="subjectsListContainer">
+            ${this.renderSubjectsListHtml()}
+          </div>
+        </div>
+
+        <!-- 5. Study Schedule Settings -->
+        <div class="form-group" style="margin-top: 24px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.1);">
+          <label class="form-label">5. Study Time Settings</label>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+            <div>
+              <label class="form-label" style="font-size: 0.85rem;">School Day Hours</label>
+              <select id="weekdayHoursSelect">
+                <option value="1">1 hour / day</option>
+                <option value="1.5">1.5 hours / day</option>
+                <option value="2" selected>2 hours / day</option>
+                <option value="2.5">2.5 hours / day</option>
+                <option value="3">3 hours / day</option>
+                <option value="4">4 hours / day</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label" style="font-size: 0.85rem;">Weekend Hours</label>
+              <select id="weekendHoursSelect">
+                <option value="2">2 hours / day</option>
+                <option value="3">3 hours / day</option>
+                <option value="4" selected>4 hours / day</option>
+                <option value="5">5 hours / day</option>
+                <option value="6">6 hours / day</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+            <div>
+              <label class="form-label" style="font-size: 0.85rem;">Session Length</label>
+              <select id="sessionDurationSelect">
+                <option value="30">30 minutes</option>
+                <option value="45" selected>45 minutes</option>
+                <option value="60">60 minutes</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label" style="font-size: 0.85rem;">Daily Start Time</label>
+              <input type="time" id="dailyStartTimeInput" value="16:30">
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label" style="font-size: 0.85rem;">Optional Rest Day</label>
+            <select id="restDaySelect">
+              <option value="none" selected>None (Study every day)</option>
+              <option value="friday">Friday</option>
+              <option value="saturday">Saturday</option>
+              <option value="sunday">Sunday</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- GENERATE BUTTON -->
+        <div style="margin-top: 24px;">
+          <button class="btn btn-primary btn-full" style="padding: 14px; font-size: 1.05rem;" onclick="App.handleGeneratePlan()">
+            ⚡ Generate the Plan
+          </button>
+        </div>
+
+      </div>
+
+      <!-- PLAN PREVIEW & SAVE SECTION (Hidden until generated) -->
+      <div id="planPreviewContainer" style="display: none;"></div>
+    `;
+  },
+
+  handleStartDateChange(newDate) {
+    if (!newDate) return;
+    const pill = document.getElementById('startDatePill');
+    if (pill) {
+      pill.innerHTML = `📅 ${RevisionPlanner.formatDisplayDate(new Date(newDate + 'T00:00:00'))}`;
+    }
+  },
+
+  getDefaultExamDate() {
+    // 30 days from today by default
+    const d = new Date();
+    d.setDate(d.getDate() + 30);
+    return RevisionPlanner.formatDateISO(d);
+  },
+
+  selectYearGroup(year) {
+    this.selectedYearGroup = year;
+    // Update active topics for chosen year group
+    for (const subName in this.selectedSubjects) {
+      this.selectedSubjects[subName].topics = getTopicsForSubject(subName, year);
+    }
+    this.renderPlanCreatorForm();
+  },
+
+  renderSubjectsListHtml() {
+    const allSubjects = Object.keys(SYLLABUS_DATA.subjects);
+    // Include custom added subjects
+    for (const s in this.selectedSubjects) {
+      if (!allSubjects.includes(s)) {
+        allSubjects.push(s);
+      }
+    }
+
+    const defaultExam = this.getDefaultExamDate();
+
+    return allSubjects.map(subName => {
+      const isSelected = !!this.selectedSubjects[subName]?.selected;
+      const subState = this.selectedSubjects[subName] || {
+        selected: false,
+        examDate: defaultExam,
+        topics: getTopicsForSubject(subName, this.selectedYearGroup),
+        customTopics: [],
+        expanded: false
+      };
+
+      const syllabusTopics = getTopicsForSubject(subName, this.selectedYearGroup);
+      const allSubjectTopics = [...syllabusTopics, ...(subState.customTopics || [])];
+      const selectedTopicsCount = subState.topics ? subState.topics.length : allSubjectTopics.length;
+
+      return `
+        <div class="subject-item-card ${isSelected ? 'is-selected' : ''}" id="subCard_${subName.replace(/\s+/g, '_')}">
+          
+          <div class="subject-header-row">
+            <label class="subject-checkbox-label">
+              <input 
+                type="checkbox" 
+                ${isSelected ? 'checked' : ''} 
+                onchange="App.toggleSubjectSelect('${subName}', this.checked)"
+              >
+              <span>${SYLLABUS_DATA.subjects[subName]?.icon || '📖'} ${subName}</span>
+            </label>
+          </div>
+
+          ${isSelected ? `
+            <!-- Exam Date Field (CRITICAL FIX: Responsive, dark theme, saves accurately) -->
+            <div class="subject-exam-date-box">
+              <label class="form-label" style="font-size: 0.85rem;" for="examDate_${subName.replace(/\s+/g, '_')}">
+                Exam Date for ${subName} *
+              </label>
+              <input 
+                type="date" 
+                id="examDate_${subName.replace(/\s+/g, '_')}"
+                value="${subState.examDate || defaultExam}"
+                min="${RevisionPlanner.formatDateISO(new Date())}"
+                onchange="App.handleSubjectExamDateChange('${subName}', this.value)"
+                required
+              >
+              <div class="date-confirm-pill" id="pill_examDate_${subName.replace(/\s+/g, '_')}">
+                📅 ${RevisionPlanner.formatDisplayDate(new Date((subState.examDate || defaultExam) + 'T00:00:00'))}
+              </div>
+
+              <!-- Topic selection summary & accordion toggle -->
+              <div style="margin-top: 10px;">
+                <button 
+                  type="button" 
+                  class="topics-drawer-toggle" 
+                  onclick="App.toggleTopicsDrawer('${subName}')"
+                >
+                  ${subState.expanded ? '▲ Hide Topics' : `▼ Select Topics (${selectedTopicsCount}/${allSubjectTopics.length} selected)`}
+                </button>
+              </div>
+
+              <!-- Topics Drawer -->
+              <div class="topics-drawer-content" id="drawer_${subName.replace(/\s+/g, '_')}" style="display: ${subState.expanded ? 'block' : 'none'};">
+                <div class="topics-actions-bar">
+                  <span style="font-size: 0.8rem; color: #93C5FD; font-weight: 600;">Topics to Revise:</span>
+                  <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn btn-ghost btn-sm" onclick="App.selectAllTopics('${subName}', true)" style="font-size: 0.75rem; padding: 2px 6px;">
+                      Select All
+                    </button>
+                    <button type="button" class="btn btn-ghost btn-sm" onclick="App.selectAllTopics('${subName}', false)" style="font-size: 0.75rem; padding: 2px 6px;">
+                      Clear
+                    </button>
+                  </div>
+                </div>
+
+                <div class="topics-grid">
+                  ${allSubjectTopics.map(topic => {
+                    const isChecked = subState.topics && subState.topics.includes(topic);
+                    return `
+                      <label class="topic-label">
+                        <input 
+                          type="checkbox" 
+                          ${isChecked ? 'checked' : ''} 
+                          onchange="App.toggleTopicCheck('${subName}', '${topic.replace(/'/g, "\\'")}', this.checked)"
+                        >
+                        <span>${topic}</span>
+                      </label>
+                    `;
+                  }).join('')}
+                </div>
+
+                <!-- Custom topic handwritten entry (Section 2 requirement) -->
+                <div class="custom-topic-input-row">
+                  <input 
+                    type="text" 
+                    id="customTopicInput_${subName.replace(/\s+/g, '_')}" 
+                    placeholder="Write a custom topic by hand..."
+                    style="min-height: 38px; font-size: 0.85rem;"
+                  >
+                  <button 
+                    type="button" 
+                    class="btn btn-secondary btn-sm" 
+                    onclick="App.addCustomTopic('${subName}')"
+                    style="white-space: nowrap;"
+                  >
+                    + Add Topic
+                  </button>
+                </div>
+                <div class="form-hint" style="margin-top: 6px;">
+                  Note: If no topics are ticked, all topics are automatically included.
+                </div>
+              </div>
+
+            </div>
+          ` : ''}
+
+        </div>
+      `;
+    }).join('');
+  },
+
+  toggleSubjectSelect(subName, isChecked) {
+    if (!this.selectedSubjects[subName]) {
+      this.selectedSubjects[subName] = {
+        selected: isChecked,
+        examDate: this.getDefaultExamDate(),
+        topics: getTopicsForSubject(subName, this.selectedYearGroup),
+        customTopics: [],
+        expanded: false
+      };
+    } else {
+      this.selectedSubjects[subName].selected = isChecked;
+    }
+
+    const container = document.getElementById('subjectsListContainer');
+    if (container) {
+      container.innerHTML = this.renderSubjectsListHtml();
+    }
+  },
+
+  handleSubjectExamDateChange(subName, newDate) {
+    if (this.selectedSubjects[subName]) {
+      this.selectedSubjects[subName].examDate = newDate;
+      const pill = document.getElementById(`pill_examDate_${subName.replace(/\s+/g, '_')}`);
+      if (pill) {
+        pill.innerHTML = `📅 ${RevisionPlanner.formatDisplayDate(new Date(newDate + 'T00:00:00'))}`;
+      }
+    }
+  },
+
+  toggleTopicsDrawer(subName) {
+    if (this.selectedSubjects[subName]) {
+      this.selectedSubjects[subName].expanded = !this.selectedSubjects[subName].expanded;
+      const drawer = document.getElementById(`drawer_${subName.replace(/\s+/g, '_')}`);
+      if (drawer) {
+        drawer.style.display = this.selectedSubjects[subName].expanded ? 'block' : 'none';
+      }
+    }
+  },
+
+  toggleTopicCheck(subName, topic, isChecked) {
+    if (!this.selectedSubjects[subName]) return;
+    let topics = this.selectedSubjects[subName].topics || [];
+    if (isChecked) {
+      if (!topics.includes(topic)) topics.push(topic);
+    } else {
+      topics = topics.filter(t => t !== topic);
+    }
+    this.selectedSubjects[subName].topics = topics;
+  },
+
+  selectAllTopics(subName, selectAll) {
+    if (!this.selectedSubjects[subName]) return;
+    const syllabus = getTopicsForSubject(subName, this.selectedYearGroup);
+    const custom = this.selectedSubjects[subName].customTopics || [];
+    const all = [...syllabus, ...custom];
+    this.selectedSubjects[subName].topics = selectAll ? [...all] : [];
+
+    const container = document.getElementById('subjectsListContainer');
+    if (container) {
+      container.innerHTML = this.renderSubjectsListHtml();
+    }
+  },
+
+  addCustomTopic(subName) {
+    const input = document.getElementById(`customTopicInput_${subName.replace(/\s+/g, '_')}`);
+    if (!input || !input.value.trim()) return;
+
+    const newTopic = input.value.trim();
+    if (!this.selectedSubjects[subName].customTopics) {
+      this.selectedSubjects[subName].customTopics = [];
+    }
+    this.selectedSubjects[subName].customTopics.push(newTopic);
+    if (!this.selectedSubjects[subName].topics) {
+      this.selectedSubjects[subName].topics = [];
+    }
+    this.selectedSubjects[subName].topics.push(newTopic);
+    input.value = '';
+
+    const container = document.getElementById('subjectsListContainer');
+    if (container) {
+      container.innerHTML = this.renderSubjectsListHtml();
+    }
+  },
+
+  showAddCustomSubjectPrompt() {
+    const name = prompt('Enter the name of the new subject (e.g. History, Economics, Geography):');
+    if (!name || !name.trim()) return;
+
+    const subName = name.trim();
+    this.selectedSubjects[subName] = {
+      selected: true,
+      examDate: this.getDefaultExamDate(),
+      topics: ['Key Topics & Chapter 1', 'Exam Technique & Case Studies'],
+      customTopics: ['Key Topics & Chapter 1', 'Exam Technique & Case Studies'],
+      expanded: true
+    };
+
+    const container = document.getElementById('subjectsListContainer');
+    if (container) {
+      container.innerHTML = this.renderSubjectsListHtml();
+    }
+  },
+
+  /**
+   * GENERATE REVISION PLAN
+   */
+  handleGeneratePlan() {
+    const studentName = document.getElementById('studentNameInput').value.trim();
+    if (!studentName) {
+      alert('Please enter the student\'s name.');
+      document.getElementById('studentNameInput').focus();
+      return;
+    }
+
+    const startDate = document.getElementById('startDateInput').value;
+    if (!startDate) {
+      alert('Please choose a start date.');
+      return;
+    }
+
+    // Collect chosen subjects
+    const subjectsToPlan = [];
+    for (const subName in this.selectedSubjects) {
+      const sub = this.selectedSubjects[subName];
+      if (sub.selected) {
+        if (!sub.examDate) {
+          alert(`Please select an exam date for ${subName}.`);
+          return;
+        }
+
+        // Fallback: if no topics ticked, use all topics
+        const syllabus = getTopicsForSubject(subName, this.selectedYearGroup);
+        const allTopics = [...syllabus, ...(sub.customTopics || [])];
+        const chosenTopics = (sub.topics && sub.topics.length > 0) ? sub.topics : allTopics;
+
+        subjectsToPlan.push({
+          name: subName,
+          examDate: sub.examDate,
+          topics: chosenTopics
+        });
+      }
+    }
+
+    if (subjectsToPlan.length === 0) {
+      alert('Please select at least one subject.');
+      return;
+    }
+
+    const weekdayHours = parseFloat(document.getElementById('weekdayHoursSelect').value) || 2;
+    const weekendHours = parseFloat(document.getElementById('weekendHoursSelect').value) || 4;
+    const sessionDuration = parseInt(document.getElementById('sessionDurationSelect').value, 10) || 45;
+    const dailyStartTime = document.getElementById('dailyStartTimeInput').value || '16:30';
+    const restDay = document.getElementById('restDaySelect').value || 'none';
+
+    try {
+      const plan = RevisionPlanner.generatePlan({
+        studentName,
+        yearGroup: this.selectedYearGroup,
+        startDate,
+        subjects: subjectsToPlan,
+        weekdayHours,
+        weekendHours,
+        sessionDuration,
+        dailyStartTime,
+        restDay
+      });
+
+      this.generatedPlanDraft = plan;
+      this.renderPlanPreview(plan);
+
+    } catch (err) {
+      alert('Error generating plan: ' + err.message);
+    }
+  },
+
+  renderPlanPreview(plan) {
+    const previewContainer = document.getElementById('planPreviewContainer');
+    previewContainer.style.display = 'block';
+
+    const summary = plan.summary;
+    const sampleDays = plan.schedule.slice(0, 3); // Preview first 3 days
+
+    previewContainer.innerHTML = `
+      <div class="card" style="border: 2px solid var(--primary-blue);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <h2 class="card-title" style="margin-bottom: 0;">📋 Generated Plan Preview</h2>
+          <span class="badge-status badge-active">Ready to Save</span>
+        </div>
+
+        <div style="background: #0E275E; border-radius: 12px; padding: 14px; margin-bottom: 16px;">
+          <h3 style="color: #FFFFFF; font-size: 1.1rem; margin-bottom: 6px;">${plan.studentName} – ${plan.yearGroup}</h3>
+          <p style="color: #93C5FD; font-size: 0.85rem;">
+            From ${plan.startDate} until ${plan.lastExamDate}
+          </p>
+
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; text-align: center;">
+            <div style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;">
+              <strong style="display: block; font-size: 1.2rem; color: #FFFFFF;">${summary.totalDays}</strong>
+              <small style="color: #CBD5E1;">Days</small>
+            </div>
+            <div style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;">
+              <strong style="display: block; font-size: 1.2rem; color: #FFFFFF;">${summary.totalSessions}</strong>
+              <small style="color: #CBD5E1;">Sessions</small>
+            </div>
+            <div style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;">
+              <strong style="display: block; font-size: 1.2rem; color: #FFFFFF;">${summary.totalStudyHours}h</strong>
+              <small style="color: #CBD5E1;">Total Hours</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sample preview of first 3 days -->
+        <h4 style="color: #FFFFFF; font-size: 0.95rem; margin-bottom: 10px;">First Few Days Preview:</h4>
+        <div style="margin-bottom: 20px;">
+          ${sampleDays.map(d => `
+            <div style="background: #081738; padding: 10px 12px; border-radius: 8px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.08);">
+              <div style="font-size: 0.85rem; font-weight: 700; color: #93C5FD; margin-bottom: 4px;">
+                ${d.formattedDate} (${d.dayName})
+              </div>
+              ${d.isRestDay ? `
+                <span style="color: #34D399; font-size: 0.8rem;">🌱 Rest Day</span>
+              ` : `
+                <div style="font-size: 0.8rem; color: #FFFFFF;">
+                  ${d.sessions.map(s => `• <strong>${s.startTime}-${s.endTime}</strong>: ${s.subjectName} – ${s.topic}`).join('<br>')}
+                </div>
+              `}
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- SAVE & GENERATE QR CODE BUTTON (Section 2 requirement) -->
+        <button class="btn btn-success btn-full" style="padding: 14px; font-size: 1.1rem;" onclick="App.handleSaveAndGenerateQR()">
+          💾 Save & Generate QR Code
+        </button>
+      </div>
+    `;
+
+    // Scroll to preview
+    previewContainer.scrollIntoView({ behavior: 'smooth' });
+  },
+
+  async handleSaveAndGenerateQR() {
+    if (!this.generatedPlanDraft) return;
+
+    try {
+      const savedPlan = await StorageService.savePlan(this.generatedPlanDraft);
+      this.refreshSavedCountBadge();
+
+      // Open QR Code modal
+      this.openQrModal(savedPlan);
+
+      // Reset form
+      this.generatedPlanDraft = null;
+      document.getElementById('studentNameInput').value = '';
+      document.getElementById('planPreviewContainer').style.display = 'none';
+
+    } catch (err) {
+      alert('Error saving plan: ' + err.message);
+    }
+  },
+
+  /**
+   * TUTOR TAB 2: COMPACT SAVED PLANS LIST (Section 6)
+   * "The list must be compact. Each student is one small row with name,
+   * year group, status (Active or Stopped), a Stop/Reconnect button,
+   * and a QR / link button.
+   * The QR code and link are hidden until the tutor presses QR / link,
+   * and there must be a way to hide them again."
+   */
+  async renderSavedPlansList() {
+    const main = document.getElementById('mainContent');
+    const plans = await StorageService.getAllPlans();
+
+    main.innerHTML = `
+      <div class="card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+          <h2 class="card-title" style="margin-bottom: 0;">📋 Saved Student Plans</h2>
+          <span style="font-size: 0.85rem; color: #93C5FD;">${plans.length} student${plans.length === 1 ? '' : 's'}</span>
+        </div>
+
+        <!-- Search Box (Section 6 requirement) -->
+        <div class="search-bar-row">
+          <input 
+            type="text" 
+            id="studentSearchInput" 
+            placeholder="🔍 Search student by name..." 
+            oninput="App.filterSavedPlans(this.value)"
+          >
+        </div>
+
+        <!-- Compact Plans List Container -->
+        <div class="saved-plans-compact-list" id="savedPlansRowsContainer">
+          ${this.renderCompactPlanRows(plans)}
+        </div>
+      </div>
+    `;
+  },
+
+  renderCompactPlanRows(plans) {
+    if (!plans || plans.length === 0) {
+      return `
+        <div style="text-align: center; padding: 30px 10px; color: #94A3B8;">
+          <p>No revision plans found.</p>
+          <button class="btn btn-primary btn-sm" style="margin-top: 10px;" onclick="App.switchTutorTab('create')">
+            Create First Plan
+          </button>
+        </div>
+      `;
+    }
+
+    return plans.map(plan => {
+      const isStopped = plan.status === 'stopped';
+      const subjectsCount = plan.summary?.subjectsCount || 0;
+
+      return `
+        <div class="compact-plan-row" id="planRow_${plan.id}">
+          
+          <!-- Student Info -->
+          <div class="compact-plan-info">
+            <div class="compact-plan-name">${this.escapeHtml(plan.studentName)}</div>
+            <div class="compact-plan-meta">
+              <span>${plan.yearGroup}</span>
+              <span>•</span>
+              <span>${subjectsCount} subjects</span>
+              <span>•</span>
+              <span class="badge-status ${isStopped ? 'badge-stopped' : 'badge-active'}" id="statusBadge_${plan.id}">
+                ${isStopped ? 'STOPPED' : 'ACTIVE'}
+              </span>
+            </div>
+          </div>
+
+          <!-- Actions: Stop/Reconnect, QR/Link, View, Delete -->
+          <div class="compact-plan-actions">
+            
+            <!-- Stop / Reconnect Button (Section 5) -->
+            ${isStopped ? `
+              <button 
+                class="btn btn-success btn-sm" 
+                id="btnStopRec_${plan.id}"
+                onclick="App.handleReconnectClick('${plan.id}')"
+                title="Reconnect Plan"
+              >
+                ▶️ Reconnect
+              </button>
+            ` : `
+              <button 
+                class="btn btn-danger btn-sm" 
+                id="btnStopRec_${plan.id}"
+                onclick="App.handleStopClick('${plan.id}', '${this.escapeHtml(plan.studentName)}')"
+                title="Stop Plan"
+              >
+                ⏹️ Stop
+              </button>
+            `}
+
+            <!-- QR / Link Button (Section 6) -->
+            <button 
+              class="btn btn-secondary btn-sm" 
+              onclick="App.openQrModalById('${plan.id}')"
+              title="View QR Code & Share Link"
+            >
+              📱 QR / Link
+            </button>
+
+            <!-- Preview as student -->
+            <a 
+              href="?plan=${plan.id}" 
+              target="_blank" 
+              class="btn btn-ghost btn-sm" 
+              title="Preview Student View"
+            >
+              👀
+            </a>
+
+            <!-- Delete -->
+            <button 
+              class="btn btn-ghost btn-sm" 
+              onclick="App.handleDeletePlan('${plan.id}')"
+              title="Delete Plan"
+              style="color: #F87171;"
+            >
+              🗑️
+            </button>
+
+          </div>
+
+        </div>
+      `;
+    }).join('');
+  },
+
+  async filterSavedPlans(query) {
+    const plans = await StorageService.getAllPlans();
+    const q = query.toLowerCase().trim();
+    const filtered = q ? plans.filter(p => p.studentName.toLowerCase().includes(q)) : plans;
+    const container = document.getElementById('savedPlansRowsContainer');
+    if (container) {
+      container.innerHTML = this.renderCompactPlanRows(filtered);
+    }
+  },
+
+  async refreshSavedCountBadge() {
+    const plans = await StorageService.getAllPlans();
+    const badge = document.getElementById('savedCountBadge');
+    if (badge) {
+      badge.textContent = plans.length;
+    }
+  },
+
+  /**
+   * STOP & RECONNECT ACTIONS (Section 5 requirement)
+   */
+  handleStopClick(planId, studentName) {
+    document.getElementById('stopStudentNameText').textContent = studentName;
+    document.getElementById('confirmStopActionBtn').onclick = () => this.executeStopPlan(planId);
+    document.getElementById('confirmStopModal').style.display = 'flex';
+  },
+
+  closeConfirmStopModal() {
+    document.getElementById('confirmStopModal').style.display = 'none';
+  },
+
+  async executeStopPlan(planId) {
+    this.closeConfirmStopModal();
+    try {
+      await StorageService.updatePlanStatus(planId, 'stopped');
+      // Update UI row
+      const badge = document.getElementById(`statusBadge_${planId}`);
+      if (badge) {
+        badge.className = 'badge-status badge-stopped';
+        badge.textContent = 'STOPPED';
+      }
+      const btn = document.getElementById(`btnStopRec_${planId}`);
+      if (btn) {
+        btn.className = 'btn btn-success btn-sm';
+        btn.innerHTML = '▶️ Reconnect';
+        btn.onclick = () => this.handleReconnectClick(planId);
+      }
+    } catch (e) {
+      alert('Error stopping plan: ' + e.message);
+    }
+  },
+
+  async handleReconnectClick(planId) {
+    try {
+      await StorageService.updatePlanStatus(planId, 'active');
+      // Update UI row
+      const badge = document.getElementById(`statusBadge_${planId}`);
+      if (badge) {
+        badge.className = 'badge-status badge-active';
+        badge.textContent = 'ACTIVE';
+      }
+      const btn = document.getElementById(`btnStopRec_${planId}`);
+      if (btn) {
+        btn.className = 'btn btn-danger btn-sm';
+        btn.innerHTML = '⏹️ Stop';
+        btn.onclick = () => {
+          const plan = StorageService.getLocalPlans()[planId];
+          this.handleStopClick(planId, plan ? plan.studentName : 'this student');
+        };
+      }
+    } catch (e) {
+      alert('Error reconnecting plan: ' + e.message);
+    }
+  },
+
+  async handleDeletePlan(planId) {
+    if (confirm('Are you sure you want to delete this revision plan?')) {
+      await StorageService.deletePlan(planId);
+      const row = document.getElementById(`planRow_${planId}`);
+      if (row) row.remove();
+      this.refreshSavedCountBadge();
+    }
+  },
+
+  /**
+   * QR CODE & MODAL CONTROLLER (Section 6 requirement)
+   */
+  async openQrModalById(planId) {
+    const plan = await StorageService.getPlan(planId);
+    if (plan) {
+      this.openQrModal(plan);
+    }
+  },
+
+  openQrModal(plan) {
+    this.activeModalPlan = plan;
+    document.getElementById('qrModalTitle').textContent = `${plan.studentName}'s QR Code`;
+
+    // Construct public share URL
+    const studentUrl = this.getStudentShareUrl(plan.id);
+    document.getElementById('qrLinkText').textContent = studentUrl;
+
+    // Render QR Code onto Canvas
+    const canvas = document.getElementById('qrCodeCanvas');
+    if (typeof QRCode !== 'undefined' && canvas) {
+      QRCode.toCanvas(canvas, studentUrl, {
+        width: 220,
+        margin: 2,
+        darkColor: '#0B1E4A',
+        lightColor: '#FFFFFF'
+      });
+    }
+
+    document.getElementById('qrModal').style.display = 'flex';
+  },
+
+  closeQrModal() {
+    document.getElementById('qrModal').style.display = 'none';
+  },
+
+  getStudentShareUrl(planId) {
+    const base = window.location.href.split('?')[0].split('#')[0];
+    return `${base}?plan=${encodeURIComponent(planId)}`;
+  },
+
+  copyStudentLink() {
+    if (!this.activeModalPlan) return;
+    const url = this.getStudentShareUrl(this.activeModalPlan.id);
+    navigator.clipboard.writeText(url).then(() => {
+      alert('Link copied to clipboard!\nStudents can open this on any phone without login.');
+    }).catch(() => {
+      prompt('Copy this link:', url);
+    });
+  },
+
+  /**
+   * PRINT QR CARD (Section 6 requirement)
+   */
+  printQrCard() {
+    if (!this.activeModalPlan) return;
+    const plan = this.activeModalPlan;
+    const url = this.getStudentShareUrl(plan.id);
+
+    // Render print container
+    const printDiv = document.getElementById('printContainer');
+    printDiv.innerHTML = `
+      <div style="text-align: center; font-family: sans-serif; padding: 20px;">
+        <h1 style="font-size: 26pt; margin-bottom: 4px; color: #000;">${this.escapeHtml(plan.studentName)}</h1>
+        <p style="font-size: 14pt; color: #444; margin-bottom: 16px;">
+          ${plan.yearGroup} Personal Revision Plan
+        </p>
+
+        <div class="qr-container-card" style="margin: 20px auto; display: inline-block;">
+          <canvas id="printQrCanvas"></canvas>
+        </div>
+
+        <p style="font-size: 13pt; font-weight: bold; margin-top: 14px; color: #000;">
+          📲 Scan with your phone camera to view your plan
+        </p>
+        <p style="font-size: 10pt; color: #666; margin-top: 6px; word-break: break-all;">
+          ${url}
+        </p>
+        <p style="font-size: 10pt; color: #888; margin-top: 16px;">
+          No app installation or login needed • Updates automatically
+        </p>
+      </div>
+    `;
+
+    // Render QR Code onto print canvas
+    const printCanvas = document.getElementById('printQrCanvas');
+    if (printCanvas && typeof QRCode !== 'undefined') {
+      QRCode.toCanvas(printCanvas, url, {
+        width: 260,
+        margin: 2,
+        darkColor: '#000000',
+        lightColor: '#FFFFFF'
+      });
+    }
+
+    printDiv.style.display = 'block';
+    window.print();
+    printDiv.style.display = 'none';
+  },
+
+  /**
+   * CLOUD DATABASE SETTINGS MODAL
+   */
+  openCloudSettingsModal() {
+    const config = StorageService.getSavedFirebaseConfig();
+    const input = document.getElementById('firebaseConfigInput');
+    if (config) {
+      input.value = JSON.stringify(config, null, 2);
+    } else {
+      input.value = '';
+    }
+    document.getElementById('cloudSettingsModal').style.display = 'flex';
+  },
+
+  closeCloudSettingsModal() {
+    document.getElementById('cloudSettingsModal').style.display = 'none';
+  },
+
+  saveCloudConfig() {
+    const text = document.getElementById('firebaseConfigInput').value.trim();
+    if (!text) {
+      alert('Please paste a valid Firebase configuration JSON.');
+      return;
+    }
+
+    try {
+      let configObj;
+      if (text.startsWith('{')) {
+        configObj = JSON.parse(text);
+      } else {
+        throw new Error('Config must be a JSON object starting with {');
+      }
+
+      const success = StorageService.saveFirebaseConfig(configObj);
+      if (success) {
+        alert('Firebase successfully connected! Real-time syncing is now active.');
+      } else {
+        alert('Config saved, but could not connect to Firebase. Check API key and projectId.');
+      }
+      this.closeCloudSettingsModal();
+      this.updateCloudStatusIndicator();
+    } catch (e) {
+      alert('Invalid JSON: ' + e.message);
+    }
+  },
+
+  clearCloudConfig() {
+    if (confirm('Disconnect cloud database and revert to local mode?')) {
+      StorageService.clearFirebaseConfig();
+      this.closeCloudSettingsModal();
+      this.updateCloudStatusIndicator();
+      alert('Cloud database disconnected.');
+    }
+  },
+
+  updateCloudStatusIndicator() {
+    const dot = document.getElementById('syncDot');
+    const label = document.getElementById('syncLabel');
+    if (!dot || !label) return;
+
+    if (StorageService.isFirebaseActive) {
+      dot.className = 'sync-dot online';
+      label.textContent = 'Cloud Sync Active (Firestore)';
+    } else {
+      dot.className = 'sync-dot offline';
+      label.textContent = 'Local Mode (Click ☁️ Sync to connect Firebase)';
+    }
+  },
+
+  /**
+   * TUTOR PIN CHANGE MODAL
+   */
+  openChangePinModal() {
+    document.getElementById('newPinInput').value = '';
+    document.getElementById('confirmPinInput').value = '';
+    document.getElementById('changePinModal').style.display = 'flex';
+  },
+
+  closeChangePinModal() {
+    document.getElementById('changePinModal').style.display = 'none';
+  },
+
+  saveNewPin() {
+    const p1 = document.getElementById('newPinInput').value.trim();
+    const p2 = document.getElementById('confirmPinInput').value.trim();
+    if (!p1 || p1.length < 4) {
+      alert('PIN must be at least 4 digits/characters.');
+      return;
+    }
+    if (p1 !== p2) {
+      alert('PINs do not match. Please try again.');
+      return;
+    }
+
+    TutorAuth.setPIN(p1);
+    this.closeChangePinModal();
+    alert('Tutor PIN updated successfully!');
+  },
+
+  escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+};
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  App.init();
+});
+
+if (typeof window !== 'undefined') {
+  window.App = App;
+}
+
+  </script>
+
+</body>
+</html>
