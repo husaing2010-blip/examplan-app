@@ -2023,7 +2023,13 @@ class RevisionPlanner {
 
     // Ensure start date is before or equal to last exam date
     if (startObj > lastExamObj) {
-      throw new Error('The start date must be before or on the final exam date.');
+      lastExamObj = new Date(startObj.getTime());
+      preparedSubjects.forEach(s => {
+        if (s.examDateObj < startObj) {
+          s.examDateObj = new Date(startObj.getTime());
+          s.examDate = RevisionPlanner.formatDateISO(startObj);
+        }
+      });
     }
 
     const daysSchedule = [];
@@ -2140,6 +2146,7 @@ class RevisionPlanner {
       lastExamDate: RevisionPlanner.formatDateISO(lastExamObj),
       status: 'active', // 'active' or 'stopped'
       planConfig: config, // Raw config for smart self-contained link sharing
+      subjects: preparedSubjects.map(s => ({ name: s.name, examDate: s.examDate, topics: s.topics })),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       settings: {
@@ -2605,12 +2612,16 @@ const StorageService = {
               localStorage.setItem(this.LOCAL_PLANS_KEY, JSON.stringify(localPlans));
               onUpdate(data);
             } else {
-              onError && onError('Plan not found in cloud database.');
+              if (!this.getLocalPlans()[planId]) {
+                onError && onError('Plan not found in cloud database.');
+              }
             }
           },
           (err) => {
             console.error('Firestore subscription error:', err);
-            onError && onError(err.message);
+            if (!this.getLocalPlans()[planId]) {
+              onError && onError(err.message);
+            }
           }
         );
       } catch (e) {
@@ -2647,7 +2658,8 @@ const StorageService = {
     // Initial immediate read
     this.getPlan(planId).then(plan => {
       if (plan) onUpdate(plan);
-      else onError && onError('Plan not found.');
+    }).catch(e => {
+      console.warn('Initial getPlan notice:', e);
     });
 
     // Return combined unsubscribe handler
@@ -2700,18 +2712,27 @@ const App = {
   generatedPlanDraft: null,
   activeStudentFilter: 'all', // 'today', 'tomorrow', 'all'
   selectedYearGroup: 'Year 11',
-  selectedSubjects: {}, // { 'Mathematics': { examDate: '...', topics: [...], customTopics: [...] } }
+  selectedSubjectName: 'Mathematics', // Exactly ONE subject selected
+  subjectData: {}, // { 'Mathematics': { examDate: '...', topics: [...], customTopics: [...] } }
   activeModalPlan: null,
 
   init() {
+    // Purge old service workers and caches so browser never runs stale version
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        for (let registration of registrations) {
+          registration.unregister();
+        }
+      });
+      if ('caches' in window) {
+        caches.keys().then(names => {
+          for (let name of names) caches.delete(name);
+        });
+      }
+    }
+
     this.detectRoute();
     this.updateCloudStatusIndicator();
-
-    if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
-      navigator.serviceWorker.register('./sw.js').catch(err => {
-        console.log('ServiceWorker registration optional notice:', err);
-      });
-    }
 
     // Listen to window hash or history popstate
     window.addEventListener('popstate', () => this.detectRoute());
@@ -2727,16 +2748,35 @@ const App = {
     });
   },
 
+  getUrlParam(key) {
+    if (typeof URLSearchParams !== 'undefined' && typeof window !== 'undefined' && window.location && window.location.search) {
+      try {
+        const p = new URLSearchParams(window.location.search);
+        const v = p.get(key);
+        if (v) return v;
+      } catch (e) {}
+    }
+    const href = (typeof window !== 'undefined' && window.location) ? window.location.href : '';
+    const match = href.match(new RegExp('[?&#]' + key + '=([^&#]*)'));
+    return match ? decodeURIComponent(match[1]) : null;
+  },
+
   /**
    * Router: determines if viewing as Student (?plan=...) or Tutor
    */
   detectRoute() {
-    const params = new URLSearchParams(window.location.search);
-    const hash = window.location.hash;
-    let planId = params.get('plan');
+    let planId = this.getUrlParam('plan');
+    let dParam = this.getUrlParam('d');
 
-    if (!planId && hash.startsWith('#/plan/')) {
-      planId = hash.replace('#/plan/', '');
+    if (!planId && typeof window !== 'undefined' && window.location && window.location.hash) {
+      const hashStr = window.location.hash.replace(/^#\/?/, '');
+      if (hashStr.startsWith('plan/')) {
+        planId = hashStr.replace('plan/', '').split('?')[0].split('&')[0];
+      }
+    }
+
+    if (!planId && dParam) {
+      planId = 'plan_shared';
     }
 
     if (planId) {
@@ -2764,24 +2804,35 @@ const App = {
     document.getElementById('tutorNav').style.display = 'none';
     document.getElementById('headerActions').innerHTML = '';
 
-    const params = new URLSearchParams(window.location.search);
-    const dParam = params.get('d');
+    const dParam = this.getUrlParam('d');
     let initialPlan = null;
 
     if (dParam) {
       try {
         const config = this.decodeConfig(dParam);
-        initialPlan = RevisionPlanner.generatePlan(config);
-        initialPlan.id = planId;
-        const local = StorageService.getLocalPlans()[planId];
-        if (local && local.status) {
-          initialPlan.status = local.status;
+        if (config) {
+          initialPlan = RevisionPlanner.generatePlan(config);
+          initialPlan.id = planId;
+          const local = StorageService.getLocalPlans()[planId];
+          if (local && local.status) {
+            initialPlan.status = local.status;
+          }
+          StorageService.savePlanLocally(initialPlan);
+          this.currentPlanData = initialPlan;
+          this.updateStudentViewUI(initialPlan);
         }
-        StorageService.savePlanLocally(initialPlan);
-        this.currentPlanData = initialPlan;
-        this.updateStudentViewUI(initialPlan);
       } catch (err) {
         console.warn('Could not reconstruct plan from URL param:', err);
+      }
+    }
+
+    // Check cached plans if dParam was not present
+    if (!initialPlan) {
+      const cached = StorageService.getLocalPlans()[planId];
+      if (cached) {
+        this.currentPlanData = cached;
+        this.updateStudentViewUI(cached);
+        initialPlan = cached;
       }
     }
 
@@ -3115,16 +3166,16 @@ const App = {
     const today = RevisionPlanner.formatDateISO(new Date());
 
     // Initialize default single subject state if empty
-    if (Object.keys(this.selectedSubjects).length === 0 || !Object.values(this.selectedSubjects).some(s => s.selected)) {
+    if (!this.selectedSubjectName) {
+      this.selectedSubjectName = 'Mathematics';
+    }
+    if (!this.subjectData[this.selectedSubjectName]) {
       const defaultExamDate = this.getDefaultExamDate();
-      this.selectedSubjects = {
-        'Mathematics': {
-          selected: true,
-          examDate: defaultExamDate,
-          topics: getTopicsForSubject('Mathematics', this.selectedYearGroup),
-          customTopics: [],
-          expanded: true
-        }
+      this.subjectData[this.selectedSubjectName] = {
+        examDate: defaultExamDate,
+        topics: getTopicsForSubject(this.selectedSubjectName, this.selectedYearGroup),
+        customTopics: [],
+        expanded: true
       };
     }
 
@@ -3271,16 +3322,15 @@ const App = {
   selectYearGroup(year) {
     this.selectedYearGroup = year;
     // Update active topics for chosen year group
-    for (const subName in this.selectedSubjects) {
-      this.selectedSubjects[subName].topics = getTopicsForSubject(subName, year);
+    for (const subName in this.subjectData) {
+      this.subjectData[subName].topics = getTopicsForSubject(subName, year);
     }
     this.renderPlanCreatorForm();
   },
 
   renderSubjectsListHtml() {
     const allSubjects = Object.keys(SYLLABUS_DATA.subjects);
-    // Include custom added subjects
-    for (const s in this.selectedSubjects) {
+    for (const s in this.subjectData) {
       if (!allSubjects.includes(s)) {
         allSubjects.push(s);
       }
@@ -3289,14 +3339,16 @@ const App = {
     const defaultExam = this.getDefaultExamDate();
 
     return allSubjects.map(subName => {
-      const isSelected = !!this.selectedSubjects[subName]?.selected;
-      const subState = this.selectedSubjects[subName] || {
-        selected: false,
-        examDate: defaultExam,
-        topics: getTopicsForSubject(subName, this.selectedYearGroup),
-        customTopics: [],
-        expanded: false
-      };
+      const isSelected = (subName === this.selectedSubjectName);
+      if (!this.subjectData[subName]) {
+        this.subjectData[subName] = {
+          examDate: defaultExam,
+          topics: getTopicsForSubject(subName, this.selectedYearGroup),
+          customTopics: [],
+          expanded: isSelected
+        };
+      }
+      const subState = this.subjectData[subName];
 
       const syllabusTopics = getTopicsForSubject(subName, this.selectedYearGroup);
       const allSubjectTopics = [...syllabusTopics, ...(subState.customTopics || [])];
@@ -3305,17 +3357,17 @@ const App = {
       return `
         <div class="subject-item-card ${isSelected ? 'is-selected' : ''}" id="subCard_${subName.replace(/\s+/g, '_')}">
           
-          <div class="subject-header-row">
-            <label class="subject-checkbox-label" style="cursor: pointer;">
+          <div class="subject-header-row" onclick="App.selectSingleSubject('${subName.replace(/'/g, "\\'")}')" style="cursor: pointer; display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center;">
               <input 
                 type="radio" 
                 name="singleSubjectChoice"
                 ${isSelected ? 'checked' : ''} 
-                onchange="App.selectSingleSubject('${subName}')"
                 style="width: 22px; height: 22px; accent-color: var(--primary-blue); cursor: pointer;"
               >
-              <span style="margin-left: 8px;">${SYLLABUS_DATA.subjects[subName]?.icon || '📖'} ${subName}</span>
-            </label>
+              <span style="margin-left: 10px; font-weight: ${isSelected ? '700' : '500'}; font-size: 1rem;">${SYLLABUS_DATA.subjects[subName]?.icon || '📖'} ${subName}</span>
+            </div>
+            ${isSelected ? `<span class="badge-status badge-active" style="font-size: 0.75rem;">Selected</span>` : ''}
           </div>
 
           ${isSelected ? `
@@ -3329,7 +3381,7 @@ const App = {
                 id="examDate_${subName.replace(/\s+/g, '_')}"
                 value="${subState.examDate || defaultExam}"
                 min="${RevisionPlanner.formatDateISO(new Date())}"
-                onchange="App.handleSubjectExamDateChange('${subName}', this.value)"
+                onchange="App.handleSubjectExamDateChange('${subName.replace(/'/g, "\\'")}', this.value)"
                 required
               >
               <div class="date-confirm-pill" id="pill_examDate_${subName.replace(/\s+/g, '_')}">
@@ -3341,7 +3393,7 @@ const App = {
                 <button 
                   type="button" 
                   class="topics-drawer-toggle" 
-                  onclick="App.toggleTopicsDrawer('${subName}')"
+                  onclick="App.toggleTopicsDrawer('${subName.replace(/'/g, "\\'")}')"
                 >
                   ${subState.expanded ? '▲ Hide Topics' : `▼ Select Topics (${selectedTopicsCount}/${allSubjectTopics.length} selected)`}
                 </button>
@@ -3352,10 +3404,10 @@ const App = {
                 <div class="topics-actions-bar">
                   <span style="font-size: 0.8rem; color: #93C5FD; font-weight: 600;">Topics to Revise:</span>
                   <div style="display: flex; gap: 8px;">
-                    <button type="button" class="btn btn-ghost btn-sm" onclick="App.selectAllTopics('${subName}', true)" style="font-size: 0.75rem; padding: 2px 6px;">
+                    <button type="button" class="btn btn-ghost btn-sm" onclick="App.selectAllTopics('${subName.replace(/'/g, "\\'")}', true)" style="font-size: 0.75rem; padding: 2px 6px;">
                       Select All
                     </button>
-                    <button type="button" class="btn btn-ghost btn-sm" onclick="App.selectAllTopics('${subName}', false)" style="font-size: 0.75rem; padding: 2px 6px;">
+                    <button type="button" class="btn btn-ghost btn-sm" onclick="App.selectAllTopics('${subName.replace(/'/g, "\\'")}', false)" style="font-size: 0.75rem; padding: 2px 6px;">
                       Clear
                     </button>
                   </div>
@@ -3369,7 +3421,7 @@ const App = {
                         <input 
                           type="checkbox" 
                           ${isChecked ? 'checked' : ''} 
-                          onchange="App.toggleTopicCheck('${subName}', '${topic.replace(/'/g, "\\'")}', this.checked)"
+                          onchange="App.toggleTopicCheck('${subName.replace(/'/g, "\\'")}', '${topic.replace(/'/g, "\\'")}', this.checked)"
                         >
                         <span>${topic}</span>
                       </label>
@@ -3388,7 +3440,7 @@ const App = {
                   <button 
                     type="button" 
                     class="btn btn-secondary btn-sm" 
-                    onclick="App.addCustomTopic('${subName}')"
+                    onclick="App.addCustomTopic('${subName.replace(/'/g, "\\'")}')"
                     style="white-space: nowrap;"
                   >
                     + Add Topic
@@ -3408,22 +3460,17 @@ const App = {
   },
 
   selectSingleSubject(subName) {
+    this.selectedSubjectName = subName;
     const defaultExam = this.getDefaultExamDate();
-    for (const s in this.selectedSubjects) {
-      this.selectedSubjects[s].selected = false;
-      this.selectedSubjects[s].expanded = false;
-    }
-    if (!this.selectedSubjects[subName]) {
-      this.selectedSubjects[subName] = {
-        selected: true,
+    if (!this.subjectData[subName]) {
+      this.subjectData[subName] = {
         examDate: defaultExam,
         topics: getTopicsForSubject(subName, this.selectedYearGroup),
         customTopics: [],
         expanded: true
       };
     } else {
-      this.selectedSubjects[subName].selected = true;
-      this.selectedSubjects[subName].expanded = true;
+      this.subjectData[subName].expanded = true;
     }
 
     const container = document.getElementById('subjectsListContainer');
@@ -3433,42 +3480,49 @@ const App = {
   },
 
   handleSubjectExamDateChange(subName, newDate) {
-    if (this.selectedSubjects[subName]) {
-      this.selectedSubjects[subName].examDate = newDate;
-      const pill = document.getElementById(`pill_examDate_${subName.replace(/\s+/g, '_')}`);
-      if (pill) {
-        pill.innerHTML = `📅 ${RevisionPlanner.formatDisplayDate(new Date(newDate + 'T00:00:00'))}`;
-      }
+    if (!this.subjectData[subName]) {
+      this.subjectData[subName] = {
+        examDate: newDate,
+        topics: getTopicsForSubject(subName, this.selectedYearGroup),
+        customTopics: [],
+        expanded: true
+      };
+    } else {
+      this.subjectData[subName].examDate = newDate;
+    }
+    const pill = document.getElementById(`pill_examDate_${subName.replace(/\s+/g, '_')}`);
+    if (pill) {
+      pill.innerHTML = `📅 ${RevisionPlanner.formatDisplayDate(new Date(newDate + 'T00:00:00'))}`;
     }
   },
 
   toggleTopicsDrawer(subName) {
-    if (this.selectedSubjects[subName]) {
-      this.selectedSubjects[subName].expanded = !this.selectedSubjects[subName].expanded;
+    if (this.subjectData[subName]) {
+      this.subjectData[subName].expanded = !this.subjectData[subName].expanded;
       const drawer = document.getElementById(`drawer_${subName.replace(/\s+/g, '_')}`);
       if (drawer) {
-        drawer.style.display = this.selectedSubjects[subName].expanded ? 'block' : 'none';
+        drawer.style.display = this.subjectData[subName].expanded ? 'block' : 'none';
       }
     }
   },
 
   toggleTopicCheck(subName, topic, isChecked) {
-    if (!this.selectedSubjects[subName]) return;
-    let topics = this.selectedSubjects[subName].topics || [];
+    if (!this.subjectData[subName]) return;
+    let topics = this.subjectData[subName].topics || [];
     if (isChecked) {
       if (!topics.includes(topic)) topics.push(topic);
     } else {
       topics = topics.filter(t => t !== topic);
     }
-    this.selectedSubjects[subName].topics = topics;
+    this.subjectData[subName].topics = topics;
   },
 
   selectAllTopics(subName, selectAll) {
-    if (!this.selectedSubjects[subName]) return;
+    if (!this.subjectData[subName]) return;
     const syllabus = getTopicsForSubject(subName, this.selectedYearGroup);
-    const custom = this.selectedSubjects[subName].customTopics || [];
+    const custom = this.subjectData[subName].customTopics || [];
     const all = [...syllabus, ...custom];
-    this.selectedSubjects[subName].topics = selectAll ? [...all] : [];
+    this.subjectData[subName].topics = selectAll ? [...all] : [];
 
     const container = document.getElementById('subjectsListContainer');
     if (container) {
@@ -3481,14 +3535,22 @@ const App = {
     if (!input || !input.value.trim()) return;
 
     const newTopic = input.value.trim();
-    if (!this.selectedSubjects[subName].customTopics) {
-      this.selectedSubjects[subName].customTopics = [];
+    if (!this.subjectData[subName]) {
+      this.subjectData[subName] = {
+        examDate: this.getDefaultExamDate(),
+        topics: [],
+        customTopics: [],
+        expanded: true
+      };
     }
-    this.selectedSubjects[subName].customTopics.push(newTopic);
-    if (!this.selectedSubjects[subName].topics) {
-      this.selectedSubjects[subName].topics = [];
+    if (!this.subjectData[subName].customTopics) {
+      this.subjectData[subName].customTopics = [];
     }
-    this.selectedSubjects[subName].topics.push(newTopic);
+    this.subjectData[subName].customTopics.push(newTopic);
+    if (!this.subjectData[subName].topics) {
+      this.subjectData[subName].topics = [];
+    }
+    this.subjectData[subName].topics.push(newTopic);
     input.value = '';
 
     const container = document.getElementById('subjectsListContainer');
@@ -3522,35 +3584,29 @@ const App = {
       return;
     }
 
-    // Collect chosen subjects
-    // Collect the chosen single subject
-    const subjectsToPlan = [];
-    for (const subName in this.selectedSubjects) {
-      const sub = this.selectedSubjects[subName];
-      if (sub.selected) {
-        if (!sub.examDate) {
-          alert(`Please select an exam date for ${subName}.`);
-          return;
-        }
-
-        // Fallback: if no topics ticked, use all topics
-        const syllabus = getTopicsForSubject(subName, this.selectedYearGroup);
-        const allTopics = [...syllabus, ...(sub.customTopics || [])];
-        const chosenTopics = (sub.topics && sub.topics.length > 0) ? sub.topics : allTopics;
-
-        subjectsToPlan.push({
-          name: subName,
-          examDate: sub.examDate,
-          topics: chosenTopics
-        });
-        break; // Exactly one subject allowed
-      }
-    }
-
-    if (subjectsToPlan.length === 0) {
+    // Collect chosen single subject
+    const subName = this.selectedSubjectName;
+    if (!subName || !this.subjectData[subName]) {
       alert('Please select a subject.');
       return;
     }
+
+    const sub = this.subjectData[subName];
+    if (!sub.examDate) {
+      alert(`Please select an exam date for ${subName}.`);
+      return;
+    }
+
+    // Fallback: if no topics ticked, use all topics
+    const syllabus = getTopicsForSubject(subName, this.selectedYearGroup);
+    const allTopics = [...syllabus, ...(sub.customTopics || [])];
+    const chosenTopics = (sub.topics && sub.topics.length > 0) ? sub.topics : allTopics;
+
+    const subjectsToPlan = [{
+      name: subName,
+      examDate: sub.examDate,
+      topics: chosenTopics
+    }];
 
     const weekdayHours = parseFloat(document.getElementById('weekdayHoursSelect').value) || 2;
     const weekendHours = parseFloat(document.getElementById('weekendHoursSelect').value) || 4;
@@ -3770,7 +3826,7 @@ const App = {
 
             <!-- Preview as student -->
             <a 
-              href="?plan=${plan.id}" 
+              href="${this.getStudentShareUrl(plan.id)}" 
               target="_blank" 
               class="btn btn-ghost btn-sm" 
               title="Preview Student View"
@@ -3917,8 +3973,45 @@ const App = {
     this.activeModalPlan = null;
   },
 
+  _toBase64(str) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+    let output = '';
+    str = unescape(encodeURIComponent(str));
+    for (let block = 0, charCode, i = 0, map = chars;
+         str.charAt(i | 0) || (map = '=', i % 1);
+         output += map.charAt(63 & block >> 8 - i % 1 * 8)) {
+      charCode = str.charCodeAt(i += 3/4);
+      block = block << 8 | charCode;
+    }
+    return output;
+  },
+
+  _fromBase64(input) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+    let str = String(input).replace(/[=]+$/, '');
+    let output = '';
+    for (let bc = 0, bs = 0, buffer, i = 0;
+         buffer = str.charAt(i++);
+         ~buffer && (bs = bc % 4 ? bs * 64 + buffer : buffer,
+           bc++ % 4) ? output += String.fromCharCode(255 & bs >> (-2 * bc & 6)) : 0
+    ) {
+      buffer = chars.indexOf(buffer);
+    }
+    return decodeURIComponent(escape(output));
+  },
+
   encodeConfig(config) {
     const sub = (config.subjects && config.subjects[0]) || {};
+    const defaultTopics = getTopicsForSubject(sub.name || 'Mathematics', config.yearGroup || 'Year 11');
+    const customTopics = sub.customTopics || [];
+    const hasCustom = customTopics.length > 0;
+    
+    // Check if topics are identical to full syllabus
+    const isAllSyllabus = !hasCustom && sub.topics && (
+      sub.topics.length === 0 || 
+      (sub.topics.length === defaultTopics.length && defaultTopics.every(t => sub.topics.includes(t)))
+    );
+
     const compact = {
       n: config.studentName || '',
       y: config.yearGroup || 'Year 11',
@@ -3929,52 +4022,82 @@ const App = {
       we: config.weekendHours || 4,
       dur: config.sessionDuration || 45,
       st: config.dailyStartTime || '16:30',
-      rd: config.restDay || 'none',
-      top: (sub.topics && sub.topics.length > 0) ? sub.topics : []
+      rd: config.restDay || 'none'
     };
-    const json = JSON.stringify(compact);
-    const bytes = new TextEncoder().encode(json);
-    let binary = '';
-    for (let i = 0; i < bytes.length; i++) {
-      binary += String.fromCharCode(bytes[i]);
+
+    if (!isAllSyllabus && sub.topics && sub.topics.length > 0) {
+      compact.top = sub.topics;
     }
-    return encodeURIComponent(btoa(binary));
+
+    const json = JSON.stringify(compact);
+    // URL-safe base64: replace + with -, / with _, strip padding =
+    return this._toBase64(json).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   },
 
   decodeConfig(str) {
-    const binary = atob(decodeURIComponent(str));
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) {
-      bytes[i] = binary.charCodeAt(i);
+    if (!str) return null;
+    try {
+      let cleaned = decodeURIComponent(String(str));
+      // URL-safe base64 decode: restore + and /, pad =
+      let b64 = cleaned.replace(/-/g, '+').replace(/_/g, '/').replace(/ /g, '+');
+      while (b64.length % 4 !== 0) {
+        b64 += '=';
+      }
+      const json = this._fromBase64(b64);
+      const data = JSON.parse(json);
+      if (data.n && data.sub) {
+        const fullTopics = getTopicsForSubject(data.sub, data.y || 'Year 11');
+        return {
+          studentName: data.n,
+          yearGroup: data.y || 'Year 11',
+          startDate: data.s,
+          subjects: [{
+            name: data.sub,
+            examDate: data.ed,
+            topics: (data.top && data.top.length > 0) ? data.top : fullTopics
+          }],
+          weekdayHours: data.wh || 2,
+          weekendHours: data.we || 4,
+          sessionDuration: data.dur || 45,
+          dailyStartTime: data.st || '16:30',
+          restDay: data.rd || 'none'
+        };
+      }
+      return data;
+    } catch (err) {
+      console.warn('decodeConfig error:', err);
+      return null;
     }
-    const data = JSON.parse(new TextDecoder().decode(bytes));
-    if (data.n && data.sub) {
-      return {
-        studentName: data.n,
-        yearGroup: data.y,
-        startDate: data.s,
-        subjects: [{
-          name: data.sub,
-          examDate: data.ed,
-          topics: (data.top && data.top.length > 0) ? data.top : getTopicsForSubject(data.sub, data.y)
-        }],
-        weekdayHours: data.wh,
-        weekendHours: data.we,
-        sessionDuration: data.dur,
-        dailyStartTime: data.st,
-        restDay: data.rd
-      };
-    }
-    return data;
   },
 
   getStudentShareUrl(planId) {
     const base = window.location.href.split('?')[0].split('#')[0];
-    const plan = this.activeModalPlan || StorageService.getLocalPlans()[planId];
+    const plan = (this.activeModalPlan && this.activeModalPlan.id === planId)
+      ? this.activeModalPlan
+      : StorageService.getLocalPlans()[planId];
     let extra = '';
-    if (plan && plan.planConfig) {
+    if (plan) {
       try {
-        const encoded = this.encodeConfig(plan.planConfig);
+        const config = plan.planConfig || {
+          studentName: plan.studentName,
+          yearGroup: plan.yearGroup,
+          startDate: plan.startDate,
+          subjects: plan.subjects || (plan.summary?.subjectsBreakdown ? plan.summary.subjectsBreakdown.map(s => ({
+            name: s.name,
+            examDate: s.examDate,
+            topics: getTopicsForSubject(s.name, plan.yearGroup)
+          })) : [{
+            name: 'Mathematics',
+            examDate: plan.lastExamDate,
+            topics: getTopicsForSubject('Mathematics', plan.yearGroup)
+          }]),
+          weekdayHours: plan.settings?.weekdayHours || 2,
+          weekendHours: plan.settings?.weekendHours || 4,
+          sessionDuration: plan.settings?.sessionDuration || 45,
+          dailyStartTime: plan.settings?.dailyStartTime || '16:30',
+          restDay: plan.settings?.restDay || 'none'
+        };
+        const encoded = this.encodeConfig(config);
         extra = `&d=${encoded}`;
       } catch (e) {
         console.warn('Error encoding config in URL:', e);
